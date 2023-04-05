@@ -1,0 +1,12 @@
+bigquery:
+  projectId: project-name_local
+  datasetName: test_dataset_name_local
+  tableName: test_table_name_local
+  schema:
+    fields:
+      - name: id
+        type: string
+      - name: fieldA
+        type: string
+      - name: fieldB
+        type: string

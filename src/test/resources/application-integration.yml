@@ -1,0 +1,12 @@
+bigquery:
+  projectId: lofty-root-378503
+  datasetName: test_dataset_name_integration
+  tableName: test_table_name_integration
+  schema:
+    fields:
+      - name: id
+        type: string
+      - name: fieldA
+        type: string
+      - name: fieldB
+        type: string
