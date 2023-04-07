@@ -75,7 +75,7 @@ public class Logger {
                 bqResourceMetadata.getTableName()
             );
         } else {
-            log.error("Error: IntegrationTest.echoBigQueryResourceMetadata(): Invalid option specified.");
+            log.error("Error: Logger.LogType: Invalid option specified.");
         }
         echoHorizontalLine(LogType.INFO);
     }

@@ -1,21 +1,21 @@
 package org.squidmin.spring.rest.springrestlabs.logger;
 
-public class LogFont {
+abstract class LogFont {
 
-    public static final String GREEN = "\u001b[32m";
+    protected static final String GREEN = "\u001b[32m";
 
-    public static final String CYAN = "\u001b[36m";
+    protected static final String CYAN = "\u001b[36m";
 
-    public static final String BOLD = "\u001b[1m";
+    protected static final String BOLD = "\u001b[1m";
 
-    public static final String RESET = "\u001b[0m";
+    protected static final String RESET = "\u001b[0m";
 
-    public static String boldGreen(String arg) {
+    protected static String boldGreen(String arg) {
         return BOLD + GREEN + arg + RESET;
     }
 
-    public static String boldCyan(String arg) { return BOLD + CYAN + arg + RESET; }
+    protected static String boldCyan(String arg) { return BOLD + CYAN + arg + RESET; }
 
-    public static String bold(String arg) { return BOLD + arg + RESET; }
+    protected static String bold(String arg) { return BOLD + arg + RESET; }
 
 }

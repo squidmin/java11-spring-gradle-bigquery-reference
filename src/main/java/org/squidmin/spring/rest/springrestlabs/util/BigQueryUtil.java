@@ -71,7 +71,7 @@ public class BigQueryUtil {
         } else if (type.equalsIgnoreCase("bool")) {
             return StandardSQLTypeName.BOOL;
         } else {
-            Logger.log("Error: BigQueryConfig.translateType(): Data type not supported. Defaulting to 'StandardSQLTypeNames.STRING'.", Logger.LogType.ERROR);
+            Logger.log("Error: translateType(): Data type not supported. Defaulting to 'StandardSQLTypeName.STRING'.", Logger.LogType.ERROR);
             return StandardSQLTypeName.STRING;
         }
     }
