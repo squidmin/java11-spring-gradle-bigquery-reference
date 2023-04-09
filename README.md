@@ -231,7 +231,7 @@ Example using the `integration` profile:
   -Dprofile=integration \
   -DprojectId="lofty-root-378503" \
   -DdatasetName="test_dataset_name_integration" \
-  -DtableName="test_table_name_integration_321"
+  -DtableName="test_table_name_integration"
 ```
 
 </details>
