@@ -18,8 +18,8 @@ import javax.persistence.GeneratedValue;
 public class RecordExample {
 
     @Id
-    @GeneratedValue
-    private Long id;
+//    @GeneratedValue
+    private String id;
     private String fieldA;
     private String fieldB;
     private String fieldC;

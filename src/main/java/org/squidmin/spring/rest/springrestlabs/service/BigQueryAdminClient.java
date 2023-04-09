@@ -3,10 +3,13 @@ package org.squidmin.spring.rest.springrestlabs.service;
 import autovalue.shaded.com.google.common.collect.ImmutableMap;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryError;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.EmptyTableResult;
+import com.google.cloud.bigquery.InsertAllRequest;
+import com.google.cloud.bigquery.InsertAllResponse;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
@@ -22,12 +25,14 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service;
 import org.squidmin.spring.rest.springrestlabs.config.BigQueryConfig;
 import org.squidmin.spring.rest.springrestlabs.config.DataTypes;
+import org.squidmin.spring.rest.springrestlabs.config.Field;
+import org.squidmin.spring.rest.springrestlabs.dao.RecordExample;
 import org.squidmin.spring.rest.springrestlabs.exception.CustomJobException;
 import org.squidmin.spring.rest.springrestlabs.logger.Logger;
 import org.squidmin.spring.rest.springrestlabs.util.BigQueryUtil;
 import org.squidmin.spring.rest.springrestlabs.config.ExampleSchema;
 
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -56,7 +61,7 @@ public class BigQueryAdminClient {
     public void listDatasets(String projectId) {
         try {
             Page<Dataset> datasets = bq.listDatasets(projectId, BigQuery.DatasetListOption.pageSize(100));
-            if (datasets == null) {
+            if (null == datasets) {
                 Logger.log("Dataset does not contain any models.", Logger.LogType.CYAN);
                 return;
             }
@@ -121,12 +126,43 @@ public class BigQueryAdminClient {
         return true;
     }
 
-    public TableResult query(String id) {
-        String template =
-            "SELECT * " +
-            "FROM `%s.%s.%s` " +
-            "WHERE id = '%s'";
-        String query = String.format(template, projectId, datasetName, tableName, id);
+    public void insert(List<RecordExample> records) {
+        try {
+            TableId tableId = TableId.of(datasetName, tableName);
+
+            List<InsertAllRequest.RowToInsert> rows = new ArrayList<>();
+            Map<String, Object> rowContent = new HashMap<>();
+            for (RecordExample record : records) {
+                rowContent.put("id", record.getId());
+                rowContent.put("fieldA", record.getFieldA());
+                rowContent.put("fieldB", record.getFieldB());
+                rowContent.put("fieldC", record.getFieldC());
+                rowContent.put("fieldD", record.getFieldD());
+                InsertAllRequest.RowToInsert row = InsertAllRequest.RowToInsert.of(UUID.randomUUID().toString(), rowContent);
+                rows.add(row);
+            }
+
+            InsertAllResponse response = bq.insertAll(
+                InsertAllRequest.newBuilder(tableId)
+                    .setIgnoreUnknownValues(true)
+                    .setSkipInvalidRows(true)
+                    .setRows(rows)
+                    .build()
+            );
+
+            if (response.hasErrors()) {
+                for (Map.Entry<Long, List<BigQueryError>> entry : response.getInsertErrors().entrySet()) {
+                    Logger.log(String.format("Response error: %s", entry.getValue()), Logger.LogType.ERROR);
+                }
+            }
+            Logger.log("Rows successfully inserted into table", Logger.LogType.INFO);
+        } catch (BigQueryException e) {
+            Logger.log("Insert operation not performed.", Logger.LogType.ERROR);
+            Logger.log(String.format("%s", e), Logger.LogType.ERROR);
+        }
+    }
+
+    public TableResult query(String query) {
         try {
             // Specify a job configuration to set optional job resource properties.
             QueryJobConfiguration queryConfig = QueryJobConfiguration.newBuilder(query)
@@ -139,7 +175,7 @@ public class BigQueryAdminClient {
 
             bq.create(JobInfo.of(jobId, queryConfig));  // Create a job with job ID.
 
-            Job job = bq.getJob(jobId);  // Get a job that was just created.
+            Job job = bq.getJob(jobId);  // Get the job that was just created.
             String _job = job.getJobId().getJob();
             TableResult tableResult;
             if (null != _job && _job.equals(jobId.getJob())) {
@@ -164,6 +200,31 @@ public class BigQueryAdminClient {
             );
         }
         return new EmptyTableResult(Schema.of());
+    }
+
+    public TableResult queryBatch(String query) {
+        try {
+            QueryJobConfiguration queryConfig = QueryJobConfiguration.newBuilder(query)
+                    // Run at batch priority, which won't count toward concurrent rate limit.
+                    .setPriority(QueryJobConfiguration.Priority.BATCH)
+                    .build();
+            Logger.log("Query batch performed successfully.", Logger.LogType.INFO);
+            TableResult results = bq.query(queryConfig);
+            return results;
+        } catch (BigQueryException | InterruptedException e) {
+            Logger.log("Query batch not performed:", Logger.LogType.ERROR);
+            Logger.log(String.format("%s", e.getMessage()), Logger.LogType.ERROR);
+        }
+        return null;
+    }
+
+    public TableResult queryById(String id) {
+        String template =
+            "SELECT * " +
+                "FROM `%s.%s.%s` " +
+                "WHERE id = '%s'";
+        String query = String.format(template, projectId, datasetName, tableName, id);
+        return query(query);
     }
 
 }

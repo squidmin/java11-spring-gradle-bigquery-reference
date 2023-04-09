@@ -134,7 +134,7 @@ or
 For example, assuming the name of the profile to activate is `integration`:
 
 ```shell
-./gradlew [ cleanTest ] test \
+./gradlew cleanTest test \
   --no-build-cache \
   --tests=org.squidmin.spring.rest.springrestlabs.service.BigQueryAdminClientIntegrationTest.echoDefaultBigQueryResourceMetadata \
   -Dprofile=integration \
@@ -162,7 +162,7 @@ For example, assuming the name of the profile to activate is `integration`:
 Example:
 
 ```shell
-./gradlew [ cleanTest ] test \
+./gradlew cleanTest test \
   --no-build-cache \
   --tests=org.squidmin.spring.rest.springrestlabs.service.BigQueryAdminClientIntegrationTest.listDatasets \
   -Dprofile=integration \
@@ -192,7 +192,7 @@ Example:
 Example:
 
 ```shell
-./gradlew [ cleanTest ] test \
+./gradlew cleanTest test \
   --no-build-cache \
   --tests=org.squidmin.spring.rest.springrestlabs.service.BigQueryAdminClientIntegrationTest.createDataset \
   -Dprofile=integration \
@@ -225,7 +225,7 @@ Example:
 Example using the `integration` profile:
 
 ```shell
-./gradlew [ cleanTest ] test \
+./gradlew cleanTest test \
   --no-build-cache \
   --tests=org.squidmin.spring.rest.springrestlabs.service.BigQueryAdminClientIntegrationTest.createTableWithDefaultSchema \
   -Dprofile=integration \
@@ -261,7 +261,7 @@ Example using the `integration` profile:
 Example using the `integration` profile:
 
 ```shell
-./gradlew [ cleanTest ] test \
+./gradlew cleanTest test \
   --no-build-cache \
   --tests=org.squidmin.spring.rest.springrestlabs.service.BigQueryAdminClientIntegrationTest.createTableWithCustomSchema \
   -Dprofile=integration \
@@ -269,6 +269,44 @@ Example using the `integration` profile:
   -DdatasetName="test_dataset_name_integration" \
   -DtableName="test_table_name_integration" \
   -Dschema="id,string;fieldA,string;fieldB,string"
+```
+
+</details>
+
+
+<details>
+<summary>Insert rows</summary>
+
+A CLI variation of row insertion may be implemented in the future.
+
+To test row insertion, run the following command:
+
+```shell
+./gradlew [ cleanTest ] test \
+  --no-build-cache \
+  --tests=org.squidmin.spring.rest.springrestlabs.service.BigQueryAdminClientIntegrationTest.insert \
+  -Dprofile=PROFILE_NAME \
+  -DprojectId="PROJECT_ID" \
+  -DdatasetName="DATASET_NAME" \
+  -DtableName="TABLE_NAME"
+```
+
+**Replace the following**:
+- `PROFILE_NAME`: the name of the profile to activate.
+- `PROJECT_ID`: the name of the GCP project ID to target.
+- `DATASET_NAME`: the name of the BigQuery dataset to target.
+- `TABLE_NAME`: the name of the BigQuery table to target.
+
+Example using the `integration` profile:
+
+```shell
+./gradlew cleanTest test \
+  --no-build-cache \
+  --tests=org.squidmin.spring.rest.springrestlabs.service.BigQueryAdminClientIntegrationTest.insert \
+  -Dprofile=integration \
+  -DprojectId="lofty-root-378503" \
+  -DdatasetName="test_dataset_name_integration" \
+  -DtableName="test_table_name_integration"
 ```
 
 </details>

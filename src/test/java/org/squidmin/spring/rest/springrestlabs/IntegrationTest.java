@@ -9,7 +9,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.squidmin.spring.rest.springrestlabs.config.BigQueryConfig;
 import org.squidmin.spring.rest.springrestlabs.config.ExampleSchema;
 import org.squidmin.spring.rest.springrestlabs.config.IntegrationTestConfig;
-import org.squidmin.spring.rest.springrestlabs.fixture.BigQueryTestFixture;
+import org.squidmin.spring.rest.springrestlabs.fixture.BigQueryFixture;
 import org.squidmin.spring.rest.springrestlabs.logger.Logger;
 import org.squidmin.spring.rest.springrestlabs.service.BigQueryAdminClient;
 import org.squidmin.spring.rest.springrestlabs.util.BigQueryResourceMetadata;
@@ -35,6 +35,8 @@ public class IntegrationTest {
     protected Schema SCHEMA;
 
     protected BigQueryResourceMetadata bqResourceMetadata = BigQueryResourceMetadata.builder().build();
+
+    protected BigQueryFixture bqFixture;
 
     @BeforeEach
     public void before() {
@@ -64,10 +66,10 @@ public class IntegrationTest {
     }
 
     private void initBqResourcePropertyOverriddenValues() {
-        projectIdOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.projectId.name());
-        datasetNameOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.datasetName.name());
-        tableNameOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.tableName.name());
-        schemaOverride = System.getProperty(BigQueryTestFixture.CLI_ARG_KEYS.schema.name());
+        projectIdOverride = System.getProperty(BigQueryFixture.CLI_ARG_KEYS.projectId.name());
+        datasetNameOverride = System.getProperty(BigQueryFixture.CLI_ARG_KEYS.datasetName.name());
+        tableNameOverride = System.getProperty(BigQueryFixture.CLI_ARG_KEYS.tableName.name());
+        schemaOverride = System.getProperty(BigQueryFixture.CLI_ARG_KEYS.schema.name());
         if (null != schemaOverride) { _schemaOverride = BigQueryUtil.translate(schemaOverride); }
     }
 

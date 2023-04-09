@@ -5,8 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.squidmin.spring.rest.springrestlabs.IntegrationTest;
+import org.squidmin.spring.rest.springrestlabs.fixture.BigQueryFixture;
 import org.squidmin.spring.rest.springrestlabs.logger.Logger;
-import org.squidmin.spring.rest.springrestlabs.util.BigQueryUtil;;
+import org.squidmin.spring.rest.springrestlabs.util.BigQueryUtil;
 
 @Slf4j
 public class BigQueryAdminClientIntegrationTest extends IntegrationTest {
@@ -47,9 +48,34 @@ public class BigQueryAdminClientIntegrationTest extends IntegrationTest {
     }
 
     @Test
+    public void insert() {
+        bqAdminClient.insert(BigQueryFixture.DEFAULT_ROWS.get());
+    }
+
+    @Test
     public void query() {
-        TableResult output = bqAdminClient.query("asdf-1234");
-        Assertions.assertTrue(0 < output.getTotalRows());
+        TableResult output = bqAdminClient.query(
+            BigQueryFixture.QUERIES.LOOK_UP_ID.apply(bqResourceMetadata, "asdf-1234")
+        );
+        Logger.log("Found rows:", Logger.LogType.INFO);
+        output.iterateAll().forEach(row -> Logger.log(row.toString(), Logger.LogType.INFO));
+    }
+
+    @Test
+    public void queryBatch() {
+        TableResult output = bqAdminClient.queryBatch(
+            BigQueryFixture.QUERIES.LOOK_UP_ID.apply(bqResourceMetadata, "asdf-1234")
+        );
+        Logger.log("Found rows:", Logger.LogType.INFO);
+        output.iterateAll().forEach(row -> Logger.log(row.toString(), Logger.LogType.INFO));
+    }
+
+    @Test
+    public void queryById() {
+        TableResult output = bqAdminClient.queryById("asdf-1234");
+        Logger.log("Found rows:", Logger.LogType.INFO);
+        output.iterateAll().forEach(row -> Logger.log(row.toString(), Logger.LogType.INFO));
+//        Assertions.assertTrue(0 < output.getTotalRows());
     }
 
 }

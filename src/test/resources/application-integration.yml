@@ -10,3 +10,7 @@ bigquery:
         type: string
       - name: fieldB
         type: string
+      - name: fieldC
+        type: string
+      - name: fieldD
+        type: string

@@ -19,7 +19,7 @@ public class ExampleRepositoryImpl implements ExampleRepository {
 
     @Override
     public List<ResponseExample> findById(String id) {
-        TableResult tableResult = bqAdminClient.query(id);
+        TableResult tableResult = bqAdminClient.queryById(id);
         List<ResponseExample> queryResult = BigQueryUtil.toList(tableResult);
         return queryResult;
     }
