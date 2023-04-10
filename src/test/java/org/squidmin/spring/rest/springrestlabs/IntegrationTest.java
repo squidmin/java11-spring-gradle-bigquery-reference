@@ -36,8 +36,6 @@ public class IntegrationTest {
 
     protected BigQueryResourceMetadata bqResourceMetadata = BigQueryResourceMetadata.builder().build();
 
-    protected BigQueryFixture bqFixture;
-
     @BeforeEach
     public void before() {
         initialize();

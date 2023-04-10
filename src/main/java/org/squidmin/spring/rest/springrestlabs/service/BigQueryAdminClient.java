@@ -126,6 +126,21 @@ public class BigQueryAdminClient {
         return true;
     }
 
+    public void deleteTable(String projectId, String datasetName, String tableName) {
+        try {
+            boolean success = bq.delete(TableId.of(datasetName, tableName));
+            if (success) { Logger.log("Table deleted successfully", Logger.LogType.INFO); }
+            else { Logger.log("Table was not found", Logger.LogType.INFO); }
+        } catch (BigQueryException e) {
+            Logger.log(String.format("Table %s was not deleted.", tableName), Logger.LogType.ERROR);
+            Logger.log(e.getMessage(), Logger.LogType.ERROR);
+        }
+    }
+
+    public void deleteTable(String datasetName, String tableName) {
+        deleteTable(projectId, datasetName, tableName);
+    }
+
     public void insert(List<RecordExample> records) {
         try {
             TableId tableId = TableId.of(datasetName, tableName);

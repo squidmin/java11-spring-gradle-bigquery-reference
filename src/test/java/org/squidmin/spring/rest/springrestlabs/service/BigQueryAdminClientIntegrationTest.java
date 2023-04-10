@@ -48,6 +48,15 @@ public class BigQueryAdminClientIntegrationTest extends IntegrationTest {
     }
 
     @Test
+    public void deleteTable() {
+        bqAdminClient.deleteTable(
+            bqResourceMetadata.getProjectId(),
+            bqResourceMetadata.getDatasetName(),
+            bqResourceMetadata.getTableName()
+        );
+    }
+
+    @Test
     public void insert() {
         bqAdminClient.insert(BigQueryFixture.DEFAULT_ROWS.get());
     }

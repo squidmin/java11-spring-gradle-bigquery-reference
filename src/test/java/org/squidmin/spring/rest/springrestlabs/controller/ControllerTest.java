@@ -34,7 +34,8 @@ public class ControllerTest extends IntegrationTest {
 
     @Test
     public void lookUpById_givenClientRequest_whenCalled_thenReturn200() throws Exception {
-        String response = mockMvc.perform(get("/find-by-id?id=asdf-1234"))
+        String id = "asdf-1234";
+        String response = mockMvc.perform(get(String.format("/find-by-id?id=%s", id)))
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
         Logger.log("Response:", Logger.LogType.INFO);

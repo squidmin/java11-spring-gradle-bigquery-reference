@@ -310,3 +310,37 @@ Example using the `integration` profile:
 ```
 
 </details>
+
+
+<details>
+<summary>Delete table</summary>
+
+```shell
+./gradlew [ cleanTest ] test \
+  --no-build-cache \
+  --tests=org.squidmin.spring.rest.springrestlabs.service.BigQueryAdminClientIntegrationTest.deleteTable \
+  -Dprofile=PROFILE_NAME \
+  -DprojectId="PROJECT_ID" \
+  -DdatasetName="DATASET_NAME" \
+  -DtableName="TABLE_NAME"
+```
+
+**Replace the following**:
+- `PROFILE_NAME`: the name of the profile to activate.
+- `PROJECT_ID`: the name of the GCP project ID to target.
+- `DATASET_NAME`: the name of the BigQuery dataset to target.
+- `TABLE_NAME`: the name of the BigQuery table to target.
+
+Example:
+
+```shell
+./gradlew cleanTest test \
+  --no-build-cache \
+  --tests=org.squidmin.spring.rest.springrestlabs.service.BigQueryAdminClientIntegrationTest.deleteTable \
+  -Dprofile=integration \
+  -DprojectId="lofty-root-378503" \
+  -DdatasetName="test_dataset_name_integration" \
+  -DtableName="test_table_name_integration"
+```
+
+</details>
