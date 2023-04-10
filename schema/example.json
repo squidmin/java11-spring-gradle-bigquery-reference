@@ -1,0 +1,30 @@
+[
+  {
+    "name": "id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "The primary key for this table."
+  },
+  {
+    "name": "fA",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "An example field description."
+  },
+  {
+    "name": "fB",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "defaultValueExpression": "example_default_value"
+  },
+  {
+    "name": "fC",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "fD",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  }
+]

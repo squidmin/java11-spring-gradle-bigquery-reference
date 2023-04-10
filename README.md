@@ -330,7 +330,101 @@ Example using the `integration` profile:
   -DprojectId="lofty-root-378503" \
   -DdatasetName="test_dataset_name_integration" \
   -DtableName="test_table_name_integration" \
-  -Dschema="id,string;fieldA,string;fieldB,string"
+  -Dschema="id,string;fieldA,string;fieldB,string;fieldC,string;fieldD,string"
+```
+
+---
+
+### `bq` CLI
+
+**Create and empty table with an inline schema definition**
+
+```shell
+bq mk --table project_id:dataset.table schema
+```
+
+**Replace the following**:
+- `project_id`: the name of the GCP project to target.
+- `dataset`: the name of the BigQuery dataset to target.
+- `table`: the name of the BigQuery table to target.
+- `schema`: an inline schema definition.
+
+Example:
+
+```shell
+bq mk --table \
+  lofty-root-378503:test_dataset_name_integration.test_table_name_integration \
+  id:STRING,fieldA:STRING,fieldB:STRING,fieldC:STRING,fieldD:STRING
+```
+
+---
+
+### Specify the schema in a JSON schema file
+
+For an example JSON schema file, refer to: `/schema/example.json`.
+
+**Create an empty table**
+
+```shell
+bq mk --table \
+  project_id:dataset.table \
+  path_to_schema_file
+```
+
+Example:
+
+```shell
+bq mk --table \
+  lofty-root-378503:test_dataset_name_integration.test_table_name_integration \
+  ./schema/example.json
+```
+
+**Create a table with CSV data**
+
+```shell
+bq --location=location load \
+  --source_format=format \
+  project_id:dataset.table \
+  path_to_data_file \
+  path_to_schema_file
+```
+
+Example:
+
+```shell
+bq --location=us load \
+  --source_format=CSV \
+  lofty-root-378503:test_dataset_name_integration.test_table_name_integration \
+  ./csv/example.csv \
+  ./schema/example.json
+```
+
+Example:
+
+```shell
+
+```
+
+</details>
+
+
+<details>
+<summary>Write an existing table schema to a local file</summary>
+
+```shell
+bq show \
+--schema \
+--format=prettyjson \
+project_id:dataset.table > path_to_file
+```
+
+Example:
+
+```shell
+bq show \
+--schema \
+--format=prettyjson \
+lofty-root-378503:test_dataset_name_integration.test_table_name_integration > ./schema/example
 ```
 
 </details>
