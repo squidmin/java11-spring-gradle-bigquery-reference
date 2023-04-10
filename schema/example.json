@@ -15,7 +15,7 @@
     "name": "fB",
     "type": "STRING",
     "mode": "NULLABLE",
-    "defaultValueExpression": "example_default_value"
+    "defaultValueExpression": "'example_default_value'"
   },
   {
     "name": "fC",

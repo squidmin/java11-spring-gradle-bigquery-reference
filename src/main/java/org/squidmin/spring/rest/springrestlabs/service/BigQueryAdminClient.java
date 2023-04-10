@@ -8,7 +8,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service;
 import org.squidmin.spring.rest.springrestlabs.config.BigQueryConfig;
 import org.squidmin.spring.rest.springrestlabs.config.DataTypes;
-import org.squidmin.spring.rest.springrestlabs.config.Field;
 import org.squidmin.spring.rest.springrestlabs.dao.RecordExample;
 import org.squidmin.spring.rest.springrestlabs.exception.CustomJobException;
 import org.squidmin.spring.rest.springrestlabs.logger.Logger;
@@ -37,10 +36,6 @@ public class BigQueryAdminClient {
         this.tableName = bqConfig.getTableName();
     }
 
-    public void listDatasets() {
-        listDatasets(projectId);
-    }
-
     public void listDatasets(String projectId) {
         try {
             Page<Dataset> datasets = bq.listDatasets(projectId, BigQuery.DatasetListOption.pageSize(100));
@@ -65,8 +60,20 @@ public class BigQueryAdminClient {
         }
     }
 
-    public boolean createDataset() {
-        return createDataset(datasetName);
+    public boolean datasetExists(String datasetName) {
+        try {
+            Dataset dataset = bq.getDataset(DatasetId.of(datasetName));
+            if (dataset != null) {
+                Logger.log("Dataset exists.", Logger.LogType.CYAN);
+                return true;
+            } else {
+                Logger.log("Dataset not found.", Logger.LogType.CYAN);
+            }
+        } catch (BigQueryException e) {
+            Logger.log("Something went wrong.", Logger.LogType.ERROR);
+            Logger.log(e.getMessage(), Logger.LogType.ERROR);
+        }
+        return false;
     }
 
     public boolean createDataset(String datasetName) {
@@ -86,10 +93,6 @@ public class BigQueryAdminClient {
         return true;
     }
 
-    public void deleteDataset(String datasetName) {
-        deleteDataset(projectId, datasetName);
-    }
-
     public void deleteDataset(String projectId, String datasetName) {
         try {
             DatasetId datasetId = DatasetId.of(projectId, datasetName);
@@ -99,10 +102,6 @@ public class BigQueryAdminClient {
         } catch (BigQueryException e) {
             Logger.log(String.format("Dataset '%s' was not deleted.", datasetName), Logger.LogType.ERROR);
         }
-    }
-
-    public void deleteDatasetAndContents(String datasetName) {
-        deleteDatasetAndContents(projectId, datasetName);
     }
 
     public void deleteDatasetAndContents(String projectId, String datasetName) {
@@ -151,10 +150,6 @@ public class BigQueryAdminClient {
         }
     }
 
-    public void deleteTable(String datasetName, String tableName) {
-        deleteTable(projectId, datasetName, tableName);
-    }
-
     public void insert(List<RecordExample> records) {
         try {
             TableId tableId = TableId.of(datasetName, tableName);
@@ -193,7 +188,7 @@ public class BigQueryAdminClient {
 
     public TableResult query(String query) {
         try {
-            // Specify a job configuration to set optional job resource properties.
+            // Set optional job resource properties.
             QueryJobConfiguration queryConfig = QueryJobConfiguration.newBuilder(query)
                 .setLabels(ImmutableMap.of("example-label", "example-value"))
                 .build();
@@ -250,8 +245,8 @@ public class BigQueryAdminClient {
     public TableResult queryById(String id) {
         String template =
             "SELECT * " +
-                "FROM `%s.%s.%s` " +
-                "WHERE id = '%s'";
+            "FROM `%s.%s.%s` " +
+            "WHERE id = '%s'";
         String query = String.format(template, projectId, datasetName, tableName, id);
         return query(query);
     }

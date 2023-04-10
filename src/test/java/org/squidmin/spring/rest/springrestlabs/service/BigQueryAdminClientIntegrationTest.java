@@ -23,6 +23,11 @@ public class BigQueryAdminClientIntegrationTest extends IntegrationTest {
     }
 
     @Test
+    public void datasetExists() {
+        bqAdminClient.datasetExists(bqResourceMetadata.getDatasetName());
+    }
+
+    @Test
     public void createDataset() {
         bqAdminClient.createDataset(DATASET_NAME);
     }
