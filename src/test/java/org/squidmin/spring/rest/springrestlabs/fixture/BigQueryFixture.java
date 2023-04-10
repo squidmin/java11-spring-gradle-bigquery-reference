@@ -3,12 +3,11 @@ package org.squidmin.spring.rest.springrestlabs.fixture;
 import org.squidmin.spring.rest.springrestlabs.dao.RecordExample;
 import org.squidmin.spring.rest.springrestlabs.util.BigQueryResourceMetadata;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public abstract class BigQueryFixture {
@@ -25,19 +24,14 @@ public abstract class BigQueryFixture {
         );
     }
 
-    public static final Supplier<List<RecordExample>> DEFAULT_ROWS = () -> {
-        List<RecordExample> records = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            records.add(
-                RecordExample.builder()
-                    .id(UUID.randomUUID().toString())
-                    .fieldA("valueA")
-                    .fieldB("valueB")
-                    .fieldC("valueC")
-                    .fieldD("valueD")
-                    .build()
-            );
-        }
-        return records;
-    };
+    public static final Supplier<List<RecordExample>> DEFAULT_ROWS = () -> IntStream.range(0, 5)
+        .mapToObj(i -> RecordExample.builder()
+            .id(UUID.randomUUID().toString())
+            .fieldA("valueA")
+            .fieldB("valueB")
+            .fieldC("valueC")
+            .fieldD("valueD")
+            .build()
+        ).collect(Collectors.toList());
+
 }
