@@ -265,6 +265,20 @@ bq rm --table test_dataset_name_lofty.test_table_name_lofty
 
 
 <details>
+<summary>Modify table schemas</summary>
+
+```shell
+bq update \
+  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \
+  ./schema/example_update.json
+```
+
+Refer to the <a href="https://cloud.google.com/bigquery/docs/managing-table-schemas">GCP documentation on modifying table schemas.</a>.
+
+</details>
+
+
+<details>
 <summary>Insert data into a table</summary>
 
 **Examples**:
@@ -275,7 +289,7 @@ Insert for known values:
 bq insert test_dataset_name_lofty.test_table_name_lofty ./json/example.json
 ```
 
-Specify a template suffix (`--template_suffix` or `-x`)
+Specify a template suffix (`--template_suffix` or `-x`):
 
 ```shell
 bq insert --ignore_unknown_values \
