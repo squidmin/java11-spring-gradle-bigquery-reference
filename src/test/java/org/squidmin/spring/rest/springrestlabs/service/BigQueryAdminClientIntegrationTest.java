@@ -36,6 +36,14 @@ public class BigQueryAdminClientIntegrationTest extends IntegrationTest {
     }
 
     @Test
+    public void deleteDatasetAndContents() {
+        bqAdminClient.deleteDatasetAndContents(
+            bqResourceMetadata.getProjectId(),
+            bqResourceMetadata.getDatasetName()
+        );
+    }
+
+    @Test
     public void createTableWithDefaultSchema() {
         Logger.echoBqResourceMetadata(bqResourceMetadata, Logger.ProfileOption.ACTIVE);
         Assertions.assertTrue(

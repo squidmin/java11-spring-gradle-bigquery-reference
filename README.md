@@ -235,6 +235,37 @@ Example:
 
 
 <details>
+<summary>Delete dataset and contents</summary>
+
+```shell
+./gradlew [ cleanTest ] test \
+  --no-build-cache \
+  --tests=org.squidmin.spring.rest.springrestlabs.service.BigQueryAdminClientIntegrationTest.deleteDatasetAndContents \
+  -Dprofile=PROFILE_NAME \
+  -DprojectId="PROJECT_ID" \
+  -DdatasetName="DATASET_NAME"
+```
+
+**Replace the following**:
+- `PROFILE_NAME`: the name of the profile to activate.
+- `PROJECT_ID`: the project ID of the GCP project to target.
+- `DATASET_NAME`: the name of the dataset to target.
+
+Example:
+
+```shell
+./gradlew cleanTest test \
+  --no-build-cache \
+  --tests=org.squidmin.spring.rest.springrestlabs.service.BigQueryAdminClientIntegrationTest.deleteDatasetAndContents \
+  -Dprofile=integration \
+  -DprojectId="lofty-root-378503" \
+  -DdatasetName="test_dataset_name_integration"
+```
+
+</details>
+
+
+<details>
 <summary>Create a table with the configured default schema</summary>
 
 ```shell

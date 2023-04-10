@@ -101,6 +101,22 @@ public class BigQueryAdminClient {
         }
     }
 
+    public void deleteDatasetAndContents(String datasetName) {
+        deleteDatasetAndContents(projectId, datasetName);
+    }
+
+    public void deleteDatasetAndContents(String projectId, String datasetName) {
+        try {
+            DatasetId datasetId = DatasetId.of(projectId, datasetName);
+            // Use the force parameter to delete a dataset and its contents
+            boolean success = bq.delete(datasetId, BigQuery.DatasetDeleteOption.deleteContents());
+            if (success) { Logger.log("Dataset deleted with contents successfully", Logger.LogType.INFO); }
+            else { Logger.log("Dataset was not found", Logger.LogType.INFO); }
+        } catch (BigQueryException e) {
+            Logger.log(String.format("Dataset '%s' was not deleted with contents.", datasetName), Logger.LogType.ERROR);
+        }
+    }
+
     public boolean createTable(String datasetName, String tableName) {
         return createTable(datasetName, tableName, BigQueryUtil.translate(bqConfig.getSchema()));
     }
