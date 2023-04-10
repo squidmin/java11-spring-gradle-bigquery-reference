@@ -6,24 +6,24 @@
     "description": "The primary key for this table."
   },
   {
-    "name": "fA",
+    "name": "fieldA",
     "type": "STRING",
     "mode": "NULLABLE",
     "description": "An example field description."
   },
   {
-    "name": "fB",
+    "name": "field",
     "type": "STRING",
     "mode": "NULLABLE",
     "defaultValueExpression": "'example_default_value'"
   },
   {
-    "name": "fC",
+    "name": "field",
     "type": "STRING",
     "mode": "NULLABLE"
   },
   {
-    "name": "fD",
+    "name": "field",
     "type": "STRING",
     "mode": "NULLABLE"
   }

@@ -262,3 +262,53 @@ bq rm --table test_dataset_name_lofty.test_table_name_lofty
 ```
 
 </details>
+
+
+<details>
+<summary>Insert data into a table</summary>
+
+**Examples**:
+
+Insert for known values:
+
+```shell
+bq insert test_dataset_name_lofty.test_table_name_lofty ./json/example.json
+```
+
+Specify a template suffix (`--template_suffix` or `-x`)
+
+```shell
+bq insert --ignore_unknown_values \
+  --template_suffix=_insert \
+  test_dataset_name_lofty.test_table_name_lofty \
+  ./json/example.json
+```
+
+Refer to the <a href="">`bq insert` documentation</a>.
+
+</details>
+
+
+<details>
+<summary>Run an interactive query</summary>
+
+```shell
+bq query \
+  --use_legacy_sql=false \
+  'query_string'
+```
+
+Example:
+
+```shell
+bq query \
+  --use_legacy_sql=false \
+  'SELECT
+    id, fieldC
+  FROM
+    `lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty`
+  LIMIT
+    3;'
+```
+
+</details>
