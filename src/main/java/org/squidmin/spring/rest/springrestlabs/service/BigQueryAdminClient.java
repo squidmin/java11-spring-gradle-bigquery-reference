@@ -2,24 +2,7 @@ package org.squidmin.spring.rest.springrestlabs.service;
 
 import autovalue.shaded.com.google.common.collect.ImmutableMap;
 import com.google.api.gax.paging.Page;
-import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.BigQueryError;
-import com.google.cloud.bigquery.BigQueryException;
-import com.google.cloud.bigquery.Dataset;
-import com.google.cloud.bigquery.DatasetInfo;
-import com.google.cloud.bigquery.EmptyTableResult;
-import com.google.cloud.bigquery.InsertAllRequest;
-import com.google.cloud.bigquery.InsertAllResponse;
-import com.google.cloud.bigquery.Job;
-import com.google.cloud.bigquery.JobId;
-import com.google.cloud.bigquery.JobInfo;
-import com.google.cloud.bigquery.QueryJobConfiguration;
-import com.google.cloud.bigquery.Schema;
-import com.google.cloud.bigquery.StandardTableDefinition;
-import com.google.cloud.bigquery.TableDefinition;
-import com.google.cloud.bigquery.TableId;
-import com.google.cloud.bigquery.TableInfo;
-import com.google.cloud.bigquery.TableResult;
+import com.google.cloud.bigquery.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
@@ -101,6 +84,21 @@ public class BigQueryAdminClient {
             return false;
         }
         return true;
+    }
+
+    public void deleteDataset(String datasetName) {
+        deleteDataset(projectId, datasetName);
+    }
+
+    public void deleteDataset(String projectId, String datasetName) {
+        try {
+            DatasetId datasetId = DatasetId.of(projectId, datasetName);
+            boolean success = bq.delete(datasetId, BigQuery.DatasetDeleteOption.deleteContents());
+            if (success) { Logger.log("Dataset deleted successfully", Logger.LogType.INFO); }
+            else { Logger.log("Dataset was not found", Logger.LogType.INFO); }
+        } catch (BigQueryException e) {
+            Logger.log(String.format("Dataset '%s' was not deleted.", datasetName), Logger.LogType.ERROR);
+        }
     }
 
     public boolean createTable(String datasetName, String tableName) {
