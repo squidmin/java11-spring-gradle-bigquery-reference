@@ -255,6 +255,30 @@ bq --location=us load \
 
 
 <details>
+<summary>Show table schema</summary>
+
+Example:
+
+```shell
+bq show \
+  --schema \
+  --format=prettyjson \
+  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty
+```
+
+The table schema can be written to a file:
+
+```shell
+bq show \
+  --schema \
+  --format=prettyjson \
+  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \ > ./schema/example_show-write.json
+```
+
+</details>
+
+
+<details>
 <summary>Delete a table</summary>
 
 ```shell
