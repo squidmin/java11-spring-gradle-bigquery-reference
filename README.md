@@ -306,7 +306,7 @@ bq query \
   'SELECT
     id, fieldC
   FROM
-    `lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty`
+    `lofty-root-378503.test_dataset_name_lofty.test_table_name_lofty`
   LIMIT
     3;'
 ```
