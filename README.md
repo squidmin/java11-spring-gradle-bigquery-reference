@@ -251,6 +251,18 @@ bq --location=us load \
   ./schema/example.json
 ```
 
+Refer to the BigQuery documentation: <a href="https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#details_of_loading_csv_data">Details of loading CSV data</a>.
+
+</details>
+
+
+<details>
+<summary>Delete a table</summary>
+
+```shell
+bq rm --table test_dataset_name_lofty.test_table_name_lofty
+```
+
 </details>
 
 
@@ -273,16 +285,6 @@ bq show \
   --schema \
   --format=prettyjson \
   lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \ > ./schema/example_show-write.json
-```
-
-</details>
-
-
-<details>
-<summary>Delete a table</summary>
-
-```shell
-bq rm --table test_dataset_name_lofty.test_table_name_lofty
 ```
 
 </details>

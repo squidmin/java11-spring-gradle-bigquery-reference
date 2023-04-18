@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @EnableConfigurationProperties(value = {ExampleSchema.class, DataTypes.class})
 public class BigQueryAdminClient {
 
-    private String projectId, datasetName, tableName;
+    private final String projectId, datasetName, tableName;
 
     private final BigQuery bq;
 
