@@ -74,22 +74,41 @@ gcloud components update
 
 
 <details>
-<summary>Build</summary>
+<summary>Build JAR</summary>
 
 ```shell
-./gradlew build
+./gradlew clean build
 ```
 
-or
-
 ```shell
-./gradlew build -x test
+./gradlew clean build -x test
 ```
 
-or
+```shell
+./gradlew clean build testClasses -x test
+```
+
+</details>
+
+
+<details>
+<summary>Add manifest file</summary>
 
 ```shell
-./gradlew build testClasses -x test
+jar -cmvf \
+  ./build/tmp/jar/MANIFEST.MF \
+  ./build/libs/spring-rest-labs-0.0.1-SNAPSHOT.jar \
+  ./build/classes/java/main/org/squidmin/spring/rest/springrestlabs/SpringRestLabsApplication.class
+```
+
+</details>
+
+
+<details>
+<summary>Build container image</summary>
+
+```shell
+docker build -t spring-rest-labs .
 ```
 
 </details>
@@ -104,9 +123,28 @@ or
 ### Java application
 
 <details>
-<summary>WIP</summary>
+<summary>Run container</summary>
+
+```shell
+docker run \
+  --rm -it \
+  -e GCP_PROJECT_ID=lofty-root-378503 \
+  -v $HOME/.config/gcloud:/root/.config/gcloud \
+  -v $HOME/.m2:/root/.m2 \
+  spring-rest-labs
+```
+
+</details>
 
 
+<details>
+<summary>Run jar</summary>
+
+```shell
+exec java -jar \
+  -Dspring.profiles.active=local \
+  ./build/libs/spring-rest-labs-0.0.1-SNAPSHOT.jar
+```
 
 </details>
 

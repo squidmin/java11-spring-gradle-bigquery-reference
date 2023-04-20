@@ -15,6 +15,14 @@ configurations {
 	}
 }
 
+jar {
+	manifest {
+		attributes (
+			'Main-Class': 'orb.squidmin.spring.rest.springrestlabs.SpringRestLabsApplication'
+		)
+	}
+}
+
 repositories {
 	mavenCentral()
 }

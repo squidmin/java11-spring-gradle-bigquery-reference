@@ -1,14 +1,18 @@
 package org.squidmin.spring.rest.springrestlabs.service;
 
 import autovalue.shaded.com.google.common.collect.ImmutableMap;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.bigquery.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.squidmin.spring.rest.springrestlabs.config.BigQueryConfig;
 import org.squidmin.spring.rest.springrestlabs.config.DataTypes;
 import org.squidmin.spring.rest.springrestlabs.dao.RecordExample;
+import org.squidmin.spring.rest.springrestlabs.dto.Query;
 import org.squidmin.spring.rest.springrestlabs.exception.CustomJobException;
 import org.squidmin.spring.rest.springrestlabs.logger.Logger;
 import org.squidmin.spring.rest.springrestlabs.util.BigQueryUtil;
@@ -27,6 +31,8 @@ public class BigQueryAdminClient {
 
     private final BigQueryConfig bqConfig;
 
+    private final ObjectMapper mapper;
+
     @Autowired
     public BigQueryAdminClient(BigQueryConfig bqConfig) {
         this.bqConfig = bqConfig;
@@ -34,6 +40,7 @@ public class BigQueryAdminClient {
         this.projectId = bqConfig.getProjectId();
         this.datasetName = bqConfig.getDatasetName();
         this.tableName = bqConfig.getTableName();
+        mapper = new ObjectMapper();
     }
 
     public void listDatasets(String projectId) {
@@ -226,15 +233,20 @@ public class BigQueryAdminClient {
         return new EmptyTableResult(Schema.of());
     }
 
+    public ResponseEntity<String> restfulQuery(Query query) throws JsonProcessingException {
+        String _query = mapper.writeValueAsString(query);
+        Logger.log(String.format("QUERY == %s", _query), Logger.LogType.INFO);
+        return null;
+    }
+
     public TableResult queryBatch(String query) {
         try {
             QueryJobConfiguration queryConfig = QueryJobConfiguration.newBuilder(query)
-                    // Run at batch priority, which won't count toward concurrent rate limit.
-                    .setPriority(QueryJobConfiguration.Priority.BATCH)
-                    .build();
+                // Run at batch priority, which won't count toward concurrent rate limit.
+                .setPriority(QueryJobConfiguration.Priority.BATCH)
+                .build();
             Logger.log("Query batch performed successfully.", Logger.LogType.INFO);
-            TableResult results = bq.query(queryConfig);
-            return results;
+            return bq.query(queryConfig);
         } catch (BigQueryException | InterruptedException e) {
             Logger.log("Query batch not performed:", Logger.LogType.ERROR);
             Logger.log(String.format("%s", e.getMessage()), Logger.LogType.ERROR);
