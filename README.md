@@ -31,6 +31,27 @@ gcloud auth application-default login
 
 
 <details>
+<summary>Echo a GCP service account access token</summary>
+
+Run this command to assign a GCP access token to an environment variable on your system:
+
+```shell
+export GOOGLE_APPLICATION_CREDENTIALS=$(gcloud auth print-access-token --impersonate-service-account='SA_EMAIL_ADDRESS')
+```
+
+**Replace the following**:
+- `SA_EMAIL_ADDRESS`: the email address of the service account to impersonate.
+
+Example:
+
+```shell
+export GOOGLE_APPLICATION_CREDENTIALS=$(gcloud auth print-access-token --impersonate-service-account='9644524330-compute@developer.gserviceaccount.com')
+```
+
+</details>
+
+
+<details>
 <summary>Activate GCP service account</summary>
 
 ```shell
@@ -108,7 +129,17 @@ jar -cmvf \
 <summary>Build container image</summary>
 
 ```shell
-docker build -t spring-rest-labs .
+docker build -t \
+  GCP_PROJECT_ID=$GCP_PROJECT_ID \
+  spring-rest-labs .
+```
+
+Example:
+
+```shell
+docker build -t \
+  GCP_PROJECT_ID=lofty-root-305785 \
+  spring-rest-labs .
 ```
 
 </details>
@@ -128,7 +159,7 @@ docker build -t spring-rest-labs .
 ```shell
 docker run \
   --rm -it \
-  -e GCP_PROJECT_ID=lofty-root-378503 \
+  -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
   -v $HOME/.config/gcloud:/root/.config/gcloud \
   -v $HOME/.m2:/root/.m2 \
   spring-rest-labs
@@ -229,7 +260,7 @@ bq rm -r -f -d lofty-root-378503:test_dataset_name_lofty
 <details>
 <summary>Create a table with a configured schema</summary>
 
-**Create and empty table with an inline schema definition**
+**Create an empty table with an inline schema definition**
 
 ```shell
 bq mk --table project_id:dataset.table schema
