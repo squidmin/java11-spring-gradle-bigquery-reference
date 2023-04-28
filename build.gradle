@@ -4,7 +4,7 @@ plugins {
 	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
 }
 
-group = 'org.squidmin.spring.rest'
+group = 'org.squidmin.java.spring.gradle.bigquery'
 version = '0.0.1-SNAPSHOT'
 println "Build Version = ${version ?: '[none]'}"
 sourceCompatibility = '11'
@@ -18,7 +18,7 @@ configurations {
 jar {
 	manifest {
 		attributes (
-			'Main-Class': 'orb.squidmin.spring.rest.springrestlabs.SpringRestLabsApplication'
+			'Main-Class': 'org.squidmin.java.spring.gradle.bigquery.JavaSpringGradleBigQueryReferenceApplication'
 		)
 	}
 }

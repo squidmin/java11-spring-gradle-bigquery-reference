@@ -1,6 +1,5 @@
-# spring-rest-labs
+# java11-spring-gradle-bigquery-reference
 
-Spring Rest learning labs.
 
 Made with:
 - **IntelliJ IDEA 2023.1 (Ultimate Edition)**
@@ -128,8 +127,8 @@ gcloud components update
 ```shell
 jar -cmvf \
   ./build/tmp/jar/MANIFEST.MF \
-  ./build/libs/spring-rest-labs-0.0.1-SNAPSHOT.jar \
-  ./build/classes/java/main/org/squidmin/spring/rest/springrestlabs/SpringRestLabsApplication.class
+  ./build/libs/java11-spring-gradle-bigquery-reference-0.0.1-SNAPSHOT.jar \
+  ./build/classes/java/main/org/squidmin/java/spring/gradle/bigquery/JavaSpringGradleBigQueryReferenceApplication.class
 ```
 
 </details>
@@ -141,7 +140,7 @@ jar -cmvf \
 ```shell
 docker build -t \
   GCP_PROJECT_ID=$GCP_PROJECT_ID \
-  spring-rest-labs .
+  java11-spring-gradle-bigquery-reference .
 ```
 
 Example:
@@ -149,7 +148,7 @@ Example:
 ```shell
 docker build -t \
   GCP_PROJECT_ID=lofty-root-305785 \
-  spring-rest-labs .
+  java11-spring-gradle-bigquery-reference .
 ```
 
 </details>
@@ -172,7 +171,7 @@ docker run \
   -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
   -v $HOME/.config/gcloud:/root/.config/gcloud \
   -v $HOME/.m2:/root/.m2 \
-  spring-rest-labs
+  java11-spring-gradle-bigquery-reference
 ```
 
 </details>
@@ -184,7 +183,7 @@ docker run \
 ```shell
 exec java -jar \
   -Dspring.profiles.active=local \
-  ./build/libs/spring-rest-labs-0.0.1-SNAPSHOT.jar
+  ./build/libs/java11-spring-gradle-bigquery-reference-0.0.1-SNAPSHOT.jar
 ```
 
 </details>
