@@ -1,5 +1,6 @@
 package org.squidmin.java.spring.gradle.bigquery.service;
 
+import com.google.cloud.bigquery.InsertAllRequest;
 import com.google.cloud.bigquery.TableResult;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
@@ -8,6 +9,8 @@ import org.squidmin.java.spring.gradle.bigquery.IntegrationTest;
 import org.squidmin.java.spring.gradle.bigquery.fixture.BigQueryFixture;
 import org.squidmin.java.spring.gradle.bigquery.logger.Logger;
 import org.squidmin.java.spring.gradle.bigquery.util.BigQueryUtil;
+
+import java.util.List;
 
 @Slf4j
 public class BigQueryAdminClientIntegrationTest extends IntegrationTest {
@@ -79,7 +82,8 @@ public class BigQueryAdminClientIntegrationTest extends IntegrationTest {
 
     @Test
     public void insert() {
-        bqAdminClient.insert(BigQueryFixture.DEFAULT_ROWS.get());
+        List<InsertAllRequest.RowToInsert> rowsInserted = bqAdminClient.insert(BigQueryFixture.DEFAULT_ROWS.get());
+        rowsInserted.forEach(row -> Logger.log(String.valueOf(row), Logger.LogType.INFO));
     }
 
     @Test

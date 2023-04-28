@@ -157,11 +157,12 @@ public class BigQueryAdminClient {
         }
     }
 
-    public void insert(List<RecordExample> records) {
+    public List<InsertAllRequest.RowToInsert> insert(List<RecordExample> records) {
         try {
+            List<InsertAllRequest.RowToInsert> rowsToInsert = new ArrayList<>();
+
             TableId tableId = TableId.of(datasetName, tableName);
 
-            List<InsertAllRequest.RowToInsert> rows = new ArrayList<>();
             Map<String, Object> rowContent = new HashMap<>();
             for (RecordExample record : records) {
                 rowContent.put("id", record.getId());
@@ -169,15 +170,14 @@ public class BigQueryAdminClient {
                 rowContent.put("fieldB", record.getFieldB());
                 rowContent.put("fieldC", record.getFieldC());
                 rowContent.put("fieldD", record.getFieldD());
-                InsertAllRequest.RowToInsert row = InsertAllRequest.RowToInsert.of(UUID.randomUUID().toString(), rowContent);
-                rows.add(row);
+                rowsToInsert.add(InsertAllRequest.RowToInsert.of(UUID.randomUUID().toString(), rowContent));
             }
 
             InsertAllResponse response = bq.insertAll(
                 InsertAllRequest.newBuilder(tableId)
                     .setIgnoreUnknownValues(true)
                     .setSkipInvalidRows(true)
-                    .setRows(rows)
+                    .setRows(rowsToInsert)
                     .build()
             );
 
@@ -185,12 +185,16 @@ public class BigQueryAdminClient {
                 for (Map.Entry<Long, List<BigQueryError>> entry : response.getInsertErrors().entrySet()) {
                     Logger.log(String.format("Response error: %s", entry.getValue()), Logger.LogType.ERROR);
                 }
+                return Collections.emptyList();
+            } else {
+                Logger.log("Rows successfully inserted into table", Logger.LogType.INFO);
+                return rowsToInsert;
             }
-            Logger.log("Rows successfully inserted into table", Logger.LogType.INFO);
         } catch (BigQueryException e) {
             Logger.log("Insert operation not performed.", Logger.LogType.ERROR);
             Logger.log(String.format("%s", e), Logger.LogType.ERROR);
         }
+        return Collections.emptyList();
     }
 
     public TableResult query(String query) {
@@ -236,6 +240,7 @@ public class BigQueryAdminClient {
     public ResponseEntity<String> restfulQuery(Query query) throws JsonProcessingException {
         String _query = mapper.writeValueAsString(query);
         Logger.log(String.format("QUERY == %s", _query), Logger.LogType.INFO);
+        // TODO: Implement remainder of query method for GCP BigQuery REST API.
         return null;
     }
 

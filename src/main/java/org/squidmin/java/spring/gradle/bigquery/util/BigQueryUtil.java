@@ -24,12 +24,7 @@ public class BigQueryUtil {
         exampleSchema.getFields().forEach(
             f -> {
                 log.info("name={}, type={}", f.getName(), f.getType());
-                fields.add(
-                    Field.of(
-                        f.getName(),
-                        translateType(f.getType())
-                    )
-                );
+                fields.add(Field.of(f.getName(), translateType(f.getType())));
             }
         );
         Logger.log("Finished generating schema.", Logger.LogType.CYAN);
@@ -47,12 +42,7 @@ public class BigQueryUtil {
                         String[] split = f.split(",");
                         String name = split[0], type = split[1];
                         Logger.log(String.format("name=%s, type=%s", name, type), Logger.LogType.DEBUG);
-                        fields.add(
-                            Field.of(
-                                name,
-                                translateType(type)
-                            )
-                        );
+                        fields.add(Field.of(name, translateType(type)));
                     }
                 );
             }
@@ -70,7 +60,10 @@ public class BigQueryUtil {
         } else if (type.equalsIgnoreCase("bool")) {
             return StandardSQLTypeName.BOOL;
         } else {
-            Logger.log("Error: translateType(): Data type not supported. Defaulting to 'StandardSQLTypeName.STRING'.", Logger.LogType.ERROR);
+            Logger.log(
+                "Error: translateType(): Data type not supported. Defaulting to 'StandardSQLTypeName.STRING'.",
+                Logger.LogType.ERROR
+            );
             return StandardSQLTypeName.STRING;
         }
     }
@@ -89,6 +82,11 @@ public class BigQueryUtil {
             );
         }
         return response;
+    }
+
+    public static List<ResponseExample> toList(byte[] tableResult) {
+        // TODO: Implement toList() for response from GCP BigQuery REST API.
+        return null;
     }
 
 }
