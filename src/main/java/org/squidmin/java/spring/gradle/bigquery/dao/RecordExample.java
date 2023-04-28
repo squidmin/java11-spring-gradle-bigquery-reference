@@ -27,5 +27,7 @@ public class RecordExample {
     private String fieldB;
     private String fieldC;
     private String fieldD;
+    private String fieldE;
+    private String fieldF;
 
 }

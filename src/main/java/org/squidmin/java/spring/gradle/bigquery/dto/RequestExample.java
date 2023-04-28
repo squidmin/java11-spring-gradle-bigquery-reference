@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.squidmin.java.spring.gradle.bigquery.validation.RequestExampleConstraint;
+import org.squidmin.java.spring.gradle.bigquery.validation.FieldAConstraint;
 
 @Data
 @Builder
@@ -14,7 +14,13 @@ public class RequestExample {
 
     private String id;
 
-    @RequestExampleConstraint
-    private String constrainedField;
+    @FieldAConstraint
+    private String fieldA;
+
+    private String fieldB;
+
+    private String fieldC;
+
+    private String fieldD;
 
 }

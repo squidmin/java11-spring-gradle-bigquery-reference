@@ -2,6 +2,12 @@ bigquery:
   projectId: project-name_local
   datasetName: test_dataset_name_local
   tableName: test_table_name_local
+  rest-service:
+    base-uri: https://bigquery.googleapis.com
+    endpoints:
+      v2.jobs:
+        query: /bigquery/v2/projects/${bigquery.projectId}/queries
+        insert: /upload/bigquery/v2/projects/${bigquery.projectId}/jobs
   schema:
     fields:
       - name: id

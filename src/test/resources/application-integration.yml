@@ -2,6 +2,12 @@ bigquery:
   projectId: lofty-root-378503
   datasetName: test_dataset_name_integration
   tableName: test_table_name_integration
+  rest-service:
+    base-uri: https://bigquery.googleapis.com
+    endpoints:
+      v2.jobs:
+        query: /bigquery/v2/projects/${bigquery.projectId}/queries
+        insert: /upload/bigquery/v2/projects/${bigquery.projectId}/jobs
   schema:
     fields:
       - name: id

@@ -21,6 +21,12 @@ public class IntegrationTestConfig {
     @Value("${bigquery.tableName}")
     private String tableName;
 
+    @Value("${bigquery.rest-service.base-uri}")
+    private String baseUri;
+
+    @Value("${bigquery.rest-service.endpoints.v2.jobs.query}")
+    private String queryEndpoint;
+
     @Autowired
     private ExampleSchema schema;
 
@@ -31,7 +37,7 @@ public class IntegrationTestConfig {
 
     @Bean
     public BigQueryConfig bqConfig() {
-        bqConfig = new BigQueryConfig(projectId, datasetName, tableName, schema, dataTypes);
+        bqConfig = new BigQueryConfig(projectId, datasetName, tableName, baseUri, queryEndpoint, schema, dataTypes);
         return bqConfig;
     }
 

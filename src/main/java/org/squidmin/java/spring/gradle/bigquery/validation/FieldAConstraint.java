@@ -5,10 +5,10 @@ import javax.validation.Payload;
 import java.lang.annotation.*;
 
 @Documented
-@Constraint(validatedBy = RequestExampleValidator.class)
+@Constraint(validatedBy = FieldAValidator.class)
 @Target({ ElementType.METHOD, ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RequestExampleConstraint {
+public @interface FieldAConstraint {
 
     String message() default "Invalid request";
     Class<?>[] groups() default {};

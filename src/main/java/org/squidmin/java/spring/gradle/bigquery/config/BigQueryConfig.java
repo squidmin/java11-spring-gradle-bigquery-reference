@@ -11,13 +11,17 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ComponentScan(basePackages = {
-    "org.squidmin.spring.rest.springrestlabs"
+    "org.squidmin.java.spring.gradle.bigquery"
 })
 @Getter
 @Slf4j
 public class BigQueryConfig {
 
     private final String projectId, datasetName, tableName;
+
+    private final String baseUri;
+
+    private final String queryEndpoint;
 
     private final ExampleSchema schema;
 
@@ -29,11 +33,17 @@ public class BigQueryConfig {
     public BigQueryConfig(@Value("${bigquery.projectId}") String projectId,
                           @Value("${bigquery.datasetName}") String datasetName,
                           @Value("${bigquery.tableName}") String tableName,
+                          @Value("${bigquery.rest-service.base-uri") String baseUri,
+                          @Value("${bigquery.rest-service.endpoints.v2.jobs.query}") String queryEndpoint,
                           ExampleSchema schema,
                           DataTypes dataTypes) {
         this.projectId = projectId;
         this.datasetName = datasetName;
         this.tableName = tableName;
+
+        this.baseUri = baseUri;
+        this.queryEndpoint = queryEndpoint;
+
         this.schema = schema;
         this.dataTypes = dataTypes;
 

@@ -4,15 +4,35 @@ import autovalue.shaded.com.google.common.collect.ImmutableMap;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.gax.paging.Page;
-import com.google.cloud.bigquery.*;
+import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryError;
+import com.google.cloud.bigquery.BigQueryException;
+import com.google.cloud.bigquery.Dataset;
+import com.google.cloud.bigquery.DatasetId;
+import com.google.cloud.bigquery.DatasetInfo;
+import com.google.cloud.bigquery.EmptyTableResult;
+import com.google.cloud.bigquery.InsertAllRequest;
+import com.google.cloud.bigquery.InsertAllResponse;
+import com.google.cloud.bigquery.Job;
+import com.google.cloud.bigquery.JobId;
+import com.google.cloud.bigquery.JobInfo;
+import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.Schema;
+import com.google.cloud.bigquery.StandardTableDefinition;
+import com.google.cloud.bigquery.TableDefinition;
+import com.google.cloud.bigquery.TableId;
+import com.google.cloud.bigquery.TableInfo;
+import com.google.cloud.bigquery.TableResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.squidmin.java.spring.gradle.bigquery.config.BigQueryConfig;
 import org.squidmin.java.spring.gradle.bigquery.config.DataTypes;
 import org.squidmin.java.spring.gradle.bigquery.dao.RecordExample;
 import org.squidmin.java.spring.gradle.bigquery.dto.Query;
+import org.squidmin.java.spring.gradle.bigquery.dto.ResponseExample;
 import org.squidmin.java.spring.gradle.bigquery.exception.CustomJobException;
 import org.squidmin.java.spring.gradle.bigquery.logger.Logger;
 import org.squidmin.java.spring.gradle.bigquery.util.BigQueryUtil;
@@ -237,7 +257,7 @@ public class BigQueryAdminClient {
         return new EmptyTableResult(Schema.of());
     }
 
-    public ResponseEntity<String> restfulQuery(Query query) throws JsonProcessingException {
+    public ResponseExample restfulQuery(Query query) throws JsonProcessingException {
         String _query = mapper.writeValueAsString(query);
         Logger.log(String.format("QUERY == %s", _query), Logger.LogType.INFO);
         // TODO: Implement remainder of query method for GCP BigQuery REST API.
