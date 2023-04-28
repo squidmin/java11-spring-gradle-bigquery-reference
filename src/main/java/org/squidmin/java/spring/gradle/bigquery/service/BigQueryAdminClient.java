@@ -264,8 +264,7 @@ public class BigQueryAdminClient {
             "SELECT * " +
             "FROM `%s.%s.%s` " +
             "WHERE id = '%s'";
-        String query = String.format(template, projectId, datasetName, tableName, id);
-        return query(query);
+        return query(String.format(template, projectId, datasetName, tableName, id));
     }
 
 }
