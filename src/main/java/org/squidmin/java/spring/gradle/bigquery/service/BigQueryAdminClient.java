@@ -62,6 +62,9 @@ public class BigQueryAdminClient {
         mapper = new ObjectMapper();
     }
 
+    /**
+     * <a href="https://cloud.google.com/bigquery/docs/listing-datasets#list_datasets">List datasets</a>
+     */
     public void listDatasets() {
         try {
             Page<Dataset> datasets = bq.listDatasets(gcpDefaultUserProjectId, BigQuery.DatasetListOption.pageSize(100));
@@ -73,6 +76,31 @@ public class BigQueryAdminClient {
         } catch (BigQueryException e) {
             Logger.log(String.format("Project \"%s\" does not contain any datasets.", gcpDefaultUserProjectId), Logger.LogType.ERROR);
             Logger.log(e.getMessage(), Logger.LogType.ERROR);
+        }
+    }
+
+    /**
+     * <a href="https://cloud.google.com/bigquery/docs/listing-datasets#get_information_about_datasets">Get information about datasets</a>
+     */
+    public void getDatasetInfo() {
+        try {
+            DatasetId datasetId = DatasetId.of(gcpDefaultUserProjectId, gcpDefaultUserDataset);
+            Dataset dataset = bq.getDataset(datasetId);
+
+            // View dataset properties
+            String description = dataset.getDescription();
+            Logger.log(description, Logger.LogType.INFO);
+
+            // View tables in the dataset
+            // For more information on listing tables see:
+            // https://javadoc.io/static/com.google.cloud/google-cloud-bigquery/0.22.0-beta/com/google/cloud/bigquery/BigQuery.html
+            Page<Table> tables = bq.listTables(gcpDefaultUserDataset, BigQuery.TableListOption.pageSize(100));
+
+            tables.iterateAll().forEach(table -> Logger.log(table.getTableId().getTable() + "\n", Logger.LogType.INFO));
+
+            Logger.log("Dataset info retrieved successfully.", Logger.LogType.INFO);
+        } catch (BigQueryException e) {
+            Logger.log("Dataset info not retrieved.\n" + e, Logger.LogType.ERROR);
         }
     }
 
