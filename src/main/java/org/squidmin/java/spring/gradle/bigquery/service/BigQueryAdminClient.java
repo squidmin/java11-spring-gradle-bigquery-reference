@@ -199,6 +199,11 @@ public class BigQueryAdminClient {
         return Collections.emptyList();
     }
 
+    /**
+     * <a href="https://cloud.google.com/bigquery/docs/running-queries#queries">Run an interactive query</a>
+     * @param query A Google SQL query string.
+     * @return TableResult The rows returned from the query.
+     */
     public TableResult query(String query) {
         try {
             // Set optional job resource properties.
@@ -272,6 +277,11 @@ public class BigQueryAdminClient {
         return new ResponseEntity<>(ExampleResponse.builder().build(), HttpStatus.OK);
     }
 
+    /**
+     * <a href="https://cloud.google.com/bigquery/docs/running-queries#batch">Run a batch query</a>
+     * @param query A Google SQL query string.
+     * @return TableResult The rows returned from the query.
+     */
     public TableResult queryBatch(String query) {
         try {
             QueryJobConfiguration queryConfig = QueryJobConfiguration.newBuilder(query)
@@ -285,6 +295,24 @@ public class BigQueryAdminClient {
             Logger.log(String.format("%s", e.getMessage()), Logger.LogType.ERROR);
         }
         return null;
+    }
+
+    /**
+     * <a href="https://cloud.google.com/bigquery/docs/dry-run-queries#perform_dry_runs">Perform a query dry run</a>
+     * @param query A Google SQL query string.
+     */
+    public void queryDryRun(String query) {
+        try {
+            QueryJobConfiguration queryConfig =
+                QueryJobConfiguration.newBuilder(query).setDryRun(true).setUseQueryCache(false).build();
+
+            Job job = bq.create(JobInfo.of(queryConfig));
+            JobStatistics.QueryStatistics statistics = job.getStatistics();
+
+            Logger.log("Query dry run performed successfully." + statistics.getTotalBytesProcessed(), Logger.LogType.INFO);
+        } catch (BigQueryException e) {
+            Logger.log("Query not performed\n" + e, Logger.LogType.ERROR);
+        }
     }
 
 
