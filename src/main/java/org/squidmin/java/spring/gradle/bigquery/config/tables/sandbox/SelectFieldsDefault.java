@@ -1,19 +1,17 @@
-package org.squidmin.java.spring.gradle.bigquery.config;
+package org.squidmin.java.spring.gradle.bigquery.config.tables.sandbox;
 
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@ConfigurationProperties(prefix = "bigquery.schema")
+@ConfigurationProperties(prefix = "tables.default.select")
 @RefreshScope
 @Getter
-@Slf4j
-public class ExampleSchema {
+public class SelectFieldsDefault {
 
-    private final List<Field> fields = new ArrayList<>();
+    private final List<String> fields = new ArrayList<>();
 
 }

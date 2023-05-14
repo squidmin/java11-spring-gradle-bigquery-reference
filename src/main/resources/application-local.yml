@@ -1,18 +1,40 @@
 bigquery:
-  projectId: project-name_local
-  datasetName: test_dataset_name_local
-  tableName: test_table_name_local
-  rest-service:
-    base-uri: https://bigquery.googleapis.com
-    endpoints:
-      v2.jobs:
-        query: /bigquery/v2/projects/${bigquery.projectId}/queries
-        insert: /upload/bigquery/v2/projects/${bigquery.projectId}/jobs
-  schema:
-    fields:
-      - name: id
-        type: string
-      - name: fieldA
-        type: string
-      - name: fieldB
-        type: string
+  application-default:
+    project-id: lofty-root-378503
+    dataset: test_dataset_local
+    table: test_table_local
+  service-account:
+    project-id: ${bigquery.application-default.project-id}
+    dataset: ${bigquery.application-default.dataset}
+    table: ${bigquery.application-default.table}
+  uri:
+    queries: https://bigquery.googleapis.com/bigquery/v2/projects/${bigquery.application-default.project-id}/queries
+
+tables:
+  default:
+    schema:
+      fields:
+        - name: id
+          type: STRING
+          description: 'The primary key for the default table.'
+        - name: creation_timestamp
+          type: DATETIME
+          description: 'The time that the record was created.'
+        - name: last_update_timestamp
+          type: DATETIME
+        - name: column_a
+          type: STRING
+        - name: column_b
+          type: BOOL
+    select:
+      fields:
+        - ${tables.default.schema.fields[0].name}
+        - ${tables.default.schema.fields[1].name}
+        - ${tables.default.schema.fields[2].name}
+        - ${tables.default.schema.fields[3].name}
+    where:
+      filters:
+        - name: ${tables.default.schema.fields[0].name}
+          type: ${tables.default.schema.fields[0].type}
+        - name: ${tables.default.schema.fields[1].name}
+          type: ${tables.default.schema.fields[1].type}

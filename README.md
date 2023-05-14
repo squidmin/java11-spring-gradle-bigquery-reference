@@ -138,17 +138,15 @@ jar -cmvf \
 <summary>Build container image</summary>
 
 ```shell
-docker build -t \
-  GCP_PROJECT_ID=$GCP_PROJECT_ID \
-  java11-spring-gradle-bigquery-reference .
-```
-
-Example:
-
-```shell
-docker build -t \
-  GCP_PROJECT_ID=lofty-root-305785 \
-  java11-spring-gradle-bigquery-reference .
+docker build \
+  --build-arg GCP_SA_KEY_PATH=${GCP_SA_KEY_PATH} \
+  --build-arg GCP_DEFAULT_USER_PROJECT_ID=${GCP_DEFAULT_USER_PROJECT_ID} \
+  --build-arg GCP_DEFAULT_USER_DATASET=${GCP_DEFAULT_USER_DATASET} \
+  --build-arg GCP_DEFAULT_USER_TABLE=${GCP_DEFAULT_USER_TABLE} \
+  --build-arg GCP_SA_PROJECT_ID=${GCP_SA_PROJECT_ID} \
+  --build-arg GCP_SA_DATASET=${GCP_SA_DATASET} \
+  --build-arg GCP_SA_TABLE=${GCP_SA_TABLE} \
+  -t java11-spring-gradle-bigquery-reference .
 ```
 
 </details>
@@ -166,11 +164,18 @@ docker build -t \
 <summary>Run container</summary>
 
 ```shell
-docker run \
-  --rm -it \
-  -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \
-  -v $HOME/.config/gcloud:/root/.config/gcloud \
-  -v $HOME/.m2:/root/.m2 \
+docker run --rm -it \
+  -e GCP_SA_KEY_PATH=$GCP_SA_KEY_PATH \
+  -e GCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \
+  -e GCP_SA_ACCESS_TOKEN=$GCP_SA_ACCESS_TOKEN \
+  -e GCP_DEFAULT_USER_PROJECT_ID=$GCP_DEFAULT_USER_PROJECT_ID \
+  -e GCP_DEFAULT_USER_DATASET=$GCP_DEFAULT_USER_DATASET \
+  -e GCP_DEFAULT_USER_TABLE=$GCP_DEFAULT_USER_TABLE \
+  -e GCP_SA_PROJECT_ID=$GCP_SA_PROJECT_ID \
+  -e GCP_SA_DATASET=$GCP_SA_DATASET \
+  -e GCP_SA_TABLE=$GCP_SA_TABLE \
+  -v ${LOCAL_GCLOUD_AUTH_DIRECTORY}:${CONTAINER_GCLOUD_AUTH_DIRECTORY} \
+  -v ${LOCAL_MAVEN_REPOSITORY}:${CONTAINER_MAVEN_REPOSITORY} \
   java11-spring-gradle-bigquery-reference
 ```
 

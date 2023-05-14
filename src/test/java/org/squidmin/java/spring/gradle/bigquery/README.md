@@ -3,17 +3,18 @@
 ### REST controller
 
 <details>
-<summary>Run the "findById" endpoint test</summary>
+<summary>Run the "query" endpoint test</summary>
 
 ```shell
-./gradlew [ cleanTest ] test \
+./gradlew cleanTest test \
   --no-build-cache \
-  --tests=org.squidmin.java.spring.gradle.bigquery.controller.ControllerTest.lookUpById_givenClientRequest_whenCalled_thenReturn200 \
-  -Dprofile=integration \
-  -DprojectId="lofty-root-378503" \
-  -DdatasetName="test_dataset_name_integration" \
-  -DtableName="test_table_name_integration" \
-  -Did=asdf-1234
+  --tests=org.squidmin.java.spring.gradle.bigquery.controller.ControllerTest.query_givenClientRequest_whenCalled_thenReturnOkResponse \
+  -DPROFILE=integration \
+  -DGCP_SA_KEY_PATH=$GCP_SA_KEY_PATH \
+  -DGCP_ADC_ACCESS_TOKEN="$(gcloud auth application-default print-access-token)" \
+  -DGCP_DEFAULT_USER_PROJECT_ID="lofty-root-378503" \
+  -DGCP_DEFAULT_USER_DATASET="test_dataset_name_integration" \
+  -DGCP_DEFAULT_USER_TABLE="test_table_name_integration"
 ```
 
 </details>
@@ -25,25 +26,25 @@
 <summary>List BigQuery resource metadata configured for a particular Spring profile</summary>
 
 ```shell
-./gradlew [ cleanTest ] test \
+./gradlew cleanTest test \
   --no-build-cache \
-  --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.echoDefaultBigQueryResourceMetadata \
-  -Dprofile=PROFILE_NAME \
-  -DprojectId="PROJECT_ID"
+  --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.echoBigQueryResourceConfig \
+  -DPROFILE=PROFILE_NAME \
+  -DGCP_DEFAULT_USER_PROJECT_ID=GCP_DEFAULT_USER_PROJECT_ID
 ```
 
 **Replace the following**:
 - `PROFILE_NAME`: the name of the profile to activate for the method execution.
-- `PROJECT_ID`: the project ID for the GCP project to target.
+- `GCP_DEFAULT_USER_PROJECT_ID`: the project ID for the GCP project to target.
 
 For example, assuming the name of the profile to activate is `integration`:
 
 ```shell
 ./gradlew cleanTest test \
   --no-build-cache \
-  --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.echoDefaultBigQueryResourceMetadata \
-  -Dprofile=integration \
-  -DprojectId=lofty-root-378503
+  --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.echoBigQueryResourceConfig \
+  -DPROFILE=integration \
+  -DGCP_DEFAULT_USER_PROJECT_ID=lofty-root-378503
 ```
 
 </details>
@@ -53,16 +54,16 @@ For example, assuming the name of the profile to activate is `integration`:
 <summary>List datasets</summary>
 
 ```shell
-./gradlew [ cleanTest ] test \
+./gradlew cleanTest test \
   --no-build-cache \
   --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.listDatasets \
-  -Dprofile=PROFILE_NAME \
-  -DprojectId="PROJECT_ID"
+  -DPROFILE=PROFILE_NAME \
+  -DGCP_DEFAULT_USER_PROJECT_ID=GCP_DEFAULT_USER_PROJECT_ID
 ```
 
 **Replace the following**:
 - `PROFILE_NAME`: the name of the profile to activate.
-- `PROJECT_ID`: the project ID of the GCP project to target.
+- `GCP_DEFAULT_USER_PROJECT_ID`: the project ID of the GCP project to target.
 
 Example:
 
@@ -70,8 +71,8 @@ Example:
 ./gradlew cleanTest test \
   --no-build-cache \
   --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.listDatasets \
-  -Dprofile=integration \
-  -DprojectId="lofty-root-378503"
+  -DPROFILE=integration \
+  -DGCP_DEFAULT_USER_PROJECT_ID="lofty-root-378503"
 ```
 
 </details>
@@ -81,18 +82,18 @@ Example:
 <summary>Check whether a dataset exists</summary>
 
 ```shell
-./gradlew [ cleanTest ] test \
+./gradlew cleanTest test \
   --no-build-cache \
   --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.datasetExists \
-  -Dprofile=PROFILE_NAME \
-  -DprojectId="PROJECT_ID" \
-  -DdatasetName="DATASET_NAME"
+  -DPROFILE=PROFILE_NAME \
+  -DGCP_DEFAULT_USER_PROJECT_ID="PROJECT_ID" \
+  -DGCP_DEFAULT_USER_DATASET="GCP_DEFAULT_USER_DATASET"
 ```
 
 **Replace the following**:
 - `PROFILE_NAME`: the name of the profile to activate.
-- `PROJECT_ID`: the project ID of the GCP project to target.
-- `DATASET_NAME`: the name of the dataset to target.
+- `GCP_DEFAULT_USER_PROJECT_ID`: the project ID of the GCP project to target.
+- `GCP_DEFAULT_USER_DATASET`: the name of the dataset to target.
 
 Example:
 
@@ -100,9 +101,9 @@ Example:
 ./gradlew cleanTest test \
   --no-build-cache \
   --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.datasetExists \
-  -Dprofile=integration \
-  -DprojectId="lofty-root-378503" \
-  -DdatasetName="test_dataset_name_integration"
+  -DPROFILE=integration \
+  -DGCP_DEFAULT_USER_PROJECT_ID="lofty-root-378503" \
+  -DGCP_DEFAULT_USER_DATASET="test_dataset_name_integration"
 ```
 
 </details>
@@ -112,18 +113,18 @@ Example:
 <summary>Create a dataset</summary>
 
 ```shell
-./gradlew [ cleanTest ] test \
+./gradlew cleanTest test \
   --no-build-cache \
   --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.createDataset \
-  -Dprofile=PROFILE_NAME \
-  -DprojectId="PROJECT_ID" \
-  -DdatasetName="DATASET_NAME"
+  -DPROFILE=PROFILE_NAME \
+  -DGCP_DEFAULT_USER_PROJECT_ID=GCP_DEFAULT_USER_PROJECT_ID \
+  -DGCP_DEFAULT_USER_DATASET=GCP_DEFAULT_USER_DATASET
 ```
 
 **Replace the following**:
 - `PROFILE_NAME`: the name of the profile to activate.
-- `PROJECT_ID`: the project ID of the GCP project to target.
-- `DATASET_NAME`: the name of the dataset to target.
+- `GCP_DEFAULT_USER_PROJECT_ID`: the project ID of the GCP project to target.
+- `GCP_DEFAULT_USER_DATASET`: the name of the dataset to target.
 
 Example:
 
@@ -131,9 +132,9 @@ Example:
 ./gradlew cleanTest test \
   --no-build-cache \
   --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.createDataset \
-  -Dprofile=integration \
-  -DprojectId="lofty-root-378503" \
-  -DdatasetName="test_dataset_name_integration"
+  -DPROFILE=integration \
+  -DGCP_DEFAULT_USER_PROJECT_ID="lofty-root-378503" \
+  -DGCP_DEFAULT_USER_DATASET="test_dataset_name_integration"
 ```
 
 </details>
@@ -143,18 +144,18 @@ Example:
 <summary>Delete a dataset</summary>
 
 ```shell
-./gradlew [ cleanTest ] test \
+./gradlew cleanTest test \
   --no-build-cache \
   --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.deleteDataset \
-  -Dprofile=PROFILE_NAME \
-  -DprojectId="PROJECT_ID" \
-  -DdatasetName="DATASET_NAME"
+  -DPROFILE=PROFILE_NAME \
+  -DGCP_DEFAULT_USER_PROJECT_ID=GCP_DEFAULT_USER_PROJECT_ID \
+  -DGCP_DEFAULT_USER_DATASET=GCP_DEFAULT_USER_DATASET
 ```
 
 **Replace the following**:
 - `PROFILE_NAME`: the name of the profile to activate.
-- `PROJECT_ID`: the project ID of the GCP project to target.
-- `DATASET_NAME`: the name of the dataset to target.
+- `GCP_DEFAULT_USER_PROJECT_ID`: the project ID of the GCP project to target.
+- `GCP_DEFAULT_USER_DATASET`: the name of the dataset to target.
 
 Example:
 
@@ -162,9 +163,9 @@ Example:
 ./gradlew cleanTest test \
   --no-build-cache \
   --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.deleteDataset \
-  -Dprofile=integration \
-  -DprojectId="lofty-root-378503" \
-  -DdatasetName="test_dataset_name_integration"
+  -DPROFILE=integration \
+  -DGCP_DEFAULT_USER_PROJECT_ID="lofty-root-378503" \
+  -DGCP_DEFAULT_USER_DATASET="test_dataset_name_integration"
 ```
 
 </details>
@@ -174,18 +175,18 @@ Example:
 <summary>Delete dataset and contents</summary>
 
 ```shell
-./gradlew [ cleanTest ] test \
+./gradlew cleanTest test \
   --no-build-cache \
   --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.deleteDatasetAndContents \
-  -Dprofile=PROFILE_NAME \
-  -DprojectId="PROJECT_ID" \
-  -DdatasetName="DATASET_NAME"
+  -DPROFILE=PROFILE_NAME \
+  -DGCP_DEFAULT_USER_PROJECT_ID=GCP_DEFAULT_USER_PROJECT_ID \
+  -DGCP_DEFAULT_USER_DATASET=GCP_DEFAULT_USER_DATASET
 ```
 
 **Replace the following**:
 - `PROFILE_NAME`: the name of the profile to activate.
-- `PROJECT_ID`: the project ID of the GCP project to target.
-- `DATASET_NAME`: the name of the dataset to target.
+- `GCP_DEFAULT_USER_PROJECT_ID`: the project ID of the GCP project to target.
+- `GCP_DEFAULT_USER_DATASET`: the name of the dataset to target.
 
 Example:
 
@@ -194,8 +195,8 @@ Example:
   --no-build-cache \
   --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.deleteDatasetAndContents \
   -Dprofile=integration \
-  -DprojectId="lofty-root-378503" \
-  -DdatasetName="test_dataset_name_integration"
+  -DGCP_DEFAULT_USER_PROJECT_ID="lofty-root-378503" \
+  -DGCP_DEFAULT_USER_DATASET="test_dataset_name_integration"
 ```
 
 </details>
@@ -207,20 +208,20 @@ Example:
 This command creates a table using the default schema configured in the Spring application.
 
 ```shell
-./gradlew [ cleanTest ] test \
+./gradlew cleanTest test \
   --no-build-cache \
   --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.createTableWithDefaultSchema \
-  -Dprofile=PROFILE_NAME \
-  -DprojectId="PROJECT_ID" \
-  -DdatasetName="DATASET_NAME" \
-  -DtableName="TABLE_NAME"
+  -DPROFILE=PROFILE_NAME \
+  -DGCP_DEFAULT_USER_PROJECT_ID=GCP_DEFAULT_USER_PROJECT_ID \
+  -DGCP_DEFAULT_USER_DATASET=GCP_DEFAULT_USER_DATASET \
+  -DGCP_DEFAULT_USER_TABLE=GCP_DEFAULT_USER_TABLE
 ```
 
 **Replace the following**:
 - `PROFILE_NAME`: the name of the profile to activate.
-- `PROJECT_ID`: the project ID of the GCP project to target.
-- `DATASET_NAME`: the name of the BigQuery dataset to target.
-- `TABLE_NAME`: the name of the BigQuery table to target.
+- `GCP_DEFAULT_USER_PROJECT_ID`: the project ID of the GCP project to target.
+- `GCP_DEFAULT_USER_DATASET`: the name of the BigQuery dataset to target.
+- `GCP_DEFAULT_USER_TABLE`: the name of the BigQuery table to target.
 
 Example using the `integration` profile:
 
@@ -228,10 +229,10 @@ Example using the `integration` profile:
 ./gradlew cleanTest test \
   --no-build-cache \
   --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.createTableWithDefaultSchema \
-  -Dprofile=integration \
-  -DprojectId="lofty-root-378503" \
-  -DdatasetName="test_dataset_name_integration" \
-  -DtableName="test_table_name_integration"
+  -DPROFILE=integration \
+  -DGCP_DEFAULT_USER_PROJECT_ID="lofty-root-378503" \
+  -DGCP_DEFAULT_USER_DATASET="test_dataset_name_integration" \
+  -DGCP_DEFAULT_USER_TABLE="test_table_name_integration"
 ```
 
 </details>
@@ -241,22 +242,22 @@ Example using the `integration` profile:
 <summary>Create a table with a configured schema</summary>
 
 ```shell
-./gradlew [ cleanTest ] test \
+./gradlew cleanTest test \
   --no-build-cache \
   --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.createTableWithCustomSchema \
-  -Dprofile=PROFILE_NAME \
-  -DprojectId="PROJECT_ID" \
-  -DdatasetName="DATASET_NAME" \
-  -DtableName="TABLE_NAME" \
-  -Dschema="name_1,datatype_1;name_2,datatype_2;[...];name_n,datatype_n"
+  -DPROFILE=PROFILE_NAME \
+  -DGCP_DEFAULT_USER_PROJECT_ID=GCP_DEFAULT_USER_PROJECT_ID \
+  -DGCP_DEFAULT_USER_DATASET=GCP_DEFAULT_USER_PROJECT_ID \
+  -DGCP_DEFAULT_USER_TABLE=GCP_DEFAULT_USER_TABLE \
+  -DSCHEMA="name_1:datatype_1,name_2:datatype_2,[...],name_n:datatype_n"
 ```
 
 **Replace the following**:
 - `PROFILE_NAME`: the name of the profile to activate.
-- `PROJECT_ID`: the name of the GCP project ID to target.
-- `DATASET_NAME`: the name of the BigQuery dataset to target.
-- `TABLE_NAME`: the name of the BigQuery table to target.
-- `name_1,datatype_1;name_2,datatype_2;[...];name_n,datatype_n`: a basic representation of a database schema.
+- `GCP_DEFAULT_USER_PROJECT_ID`: the name of the GCP project ID to target.
+- `GCP_DEFAULT_USER_DATASET`: the name of the BigQuery dataset to target.
+- `GCP_DEFAULT_USER_TABLE`: the name of the BigQuery table to target.
+- `name_1:datatype_1,name_2:datatype_2,[...],name_n:datatype_n`: a basic representation of a database schema.
 
 Example:
 
@@ -264,11 +265,11 @@ Example:
 ./gradlew cleanTest test \
   --no-build-cache \
   --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.createTableWithCustomSchema \
-  -Dprofile=integration \
-  -DprojectId="lofty-root-378503" \
-  -DdatasetName="test_dataset_name_integration" \
-  -DtableName="test_table_name_integration" \
-  -Dschema="id,string;fieldA,string;fieldB,string;fieldC,string;fieldD,string"
+  -DPROFILE=integration \
+  -DGCP_DEFAULT_USER_PROJECT_ID="lofty-root-378503" \
+  -DGCP_DEFAULT_USER_DATASET="test_dataset_name_integration" \
+  -DGCP_DEFAULT_USER_TABLE="test_table_name_integration" \
+  -DSCHEMA="id:STRING,creation_timestamp:DATETIME,last_update_timestamp:DATETIME,column_a:STRING,column_b:BOOL"
 ```
 
 </details>
@@ -278,20 +279,20 @@ Example:
 <summary>Delete a table</summary>
 
 ```shell
-./gradlew [ cleanTest ] test \
+./gradlew cleanTest test \
   --no-build-cache \
   --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.deleteTable \
   -Dprofile=PROFILE_NAME \
-  -DprojectId="PROJECT_ID" \
-  -DdatasetName="DATASET_NAME" \
-  -DtableName="TABLE_NAME"
+  -DGCP_DEFAULT_USER_PROJECT_ID=GCP_DEFAULT_USER_PROJECT_ID \
+  -DGCP_DEFAULT_USER_DATASET=GCP_DEFAULT_USER_DATASET \
+  -DGCP_DEFAULT_USER_TABLE=GCP_DEFAULT_USER_TABLE
 ```
 
 **Replace the following**:
 - `PROFILE_NAME`: the name of the profile to activate.
-- `PROJECT_ID`: the name of the GCP project ID to target.
-- `DATASET_NAME`: the name of the BigQuery dataset to target.
-- `TABLE_NAME`: the name of the BigQuery table to target.
+- `GCP_DEFAULT_USER_PROJECT_ID`: the name of the GCP project ID to target.
+- `GCP_DEFAULT_USER_DATASET`: the name of the BigQuery dataset to target.
+- `GCP_DEFAULT_USER_TABLE`: the name of the BigQuery table to target.
 
 Example:
 
@@ -300,9 +301,9 @@ Example:
   --no-build-cache \
   --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.deleteTable \
   -Dprofile=integration \
-  -DprojectId="lofty-root-378503" \
-  -DdatasetName="test_dataset_name_integration" \
-  -DtableName="test_table_name_integration"
+  -DGCP_DEFAULT_USER_PROJECT_ID="lofty-root-378503" \
+  -DGCP_DEFAULT_USER_DATASET="test_dataset_name_integration" \
+  -DGCP_DEFAULT_USER_TABLE="test_table_name_integration"
 ```
 
 </details>
@@ -316,20 +317,20 @@ A CLI variation of row insertion may be implemented in the future.
 To test row insertion, run the following command:
 
 ```shell
-./gradlew [ cleanTest ] test \
+./gradlew cleanTest test \
   --no-build-cache \
   --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.insert \
-  -Dprofile=PROFILE_NAME \
-  -DprojectId="PROJECT_ID" \
-  -DdatasetName="DATASET_NAME" \
-  -DtableName="TABLE_NAME"
+  -DPROFILE=PROFILE_NAME \
+  -DGCP_DEFAULT_USER_PROJECT_ID=GCP_DEFAULT_USER_PROJECT_ID \
+  -DGCP_DEFAULT_USER_DATASET=GCP_DEFAULT_USER_DATASET \
+  -DGCP_DEFAULT_USER_TABLE=GCP_DEFAULT_USER_TABLE
 ```
 
 **Replace the following**:
 - `PROFILE_NAME`: the name of the profile to activate.
-- `PROJECT_ID`: the name of the GCP project ID to target.
-- `DATASET_NAME`: the name of the BigQuery dataset to target.
-- `TABLE_NAME`: the name of the BigQuery table to target.
+- `GCP_DEFAULT_USER_PROJECT_ID`: the name of the GCP project ID to target.
+- `GCP_DEFAULT_USER_DATASET`: the name of the BigQuery dataset to target.
+- `GCP_DEFAULT_USER_TABLE`: the name of the BigQuery table to target.
 
 Example using the `integration` profile:
 
@@ -337,10 +338,10 @@ Example using the `integration` profile:
 ./gradlew cleanTest test \
   --no-build-cache \
   --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.insert \
-  -Dprofile=integration \
-  -DprojectId="lofty-root-378503" \
-  -DdatasetName="test_dataset_name_integration" \
-  -DtableName="test_table_name_integration"
+  -DPROFILE=integration \
+  -DGCP_DEFAULT_USER_PROJECT_ID="lofty-root-378503" \
+  -DGCP_DEFAULT_USER_DATASET="test_dataset_name_integration" \
+  -DGCP_DEFAULT_USER_TABLE="test_table_name_integration"
 ```
 
 </details>

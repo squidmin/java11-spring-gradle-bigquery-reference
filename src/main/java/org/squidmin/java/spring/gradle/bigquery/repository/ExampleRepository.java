@@ -1,18 +1,18 @@
 package org.squidmin.java.spring.gradle.bigquery.repository;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.squidmin.java.spring.gradle.bigquery.dao.RecordExample;
+import org.squidmin.java.spring.gradle.bigquery.dto.ExampleResponse;
 import org.squidmin.java.spring.gradle.bigquery.dto.Query;
-import org.squidmin.java.spring.gradle.bigquery.dto.ResponseExample;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface ExampleRepository {
 
-    List<ResponseExample> findById(String id);
+    ExampleResponse restfulQuery(Query query) throws IOException;
 
-    ResponseExample query(Query query) throws JsonProcessingException;
+    ExampleResponse query(Query query) throws IOException;
 
-    int insert(List<RecordExample> records);
+    int insert(String projectId, String dataset, String table, List<RecordExample> records);
 
 }

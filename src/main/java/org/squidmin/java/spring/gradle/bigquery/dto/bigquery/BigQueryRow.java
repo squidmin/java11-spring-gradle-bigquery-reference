@@ -1,18 +1,18 @@
-package org.squidmin.java.spring.gradle.bigquery.dto;
+package org.squidmin.java.spring.gradle.bigquery.dto.bigquery;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResponseExample {
+public class BigQueryRow {
 
-    private String id;
-    private String fieldA;
-    private String fieldB;
+    private List<BigQueryRowValue> f;
 
 }

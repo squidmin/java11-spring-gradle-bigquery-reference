@@ -1,117 +1,90 @@
 package org.squidmin.java.spring.gradle.bigquery.service;
 
 import autovalue.shaded.com.google.common.collect.ImmutableMap;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.gax.paging.Page;
-import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.BigQueryError;
-import com.google.cloud.bigquery.BigQueryException;
-import com.google.cloud.bigquery.Dataset;
-import com.google.cloud.bigquery.DatasetId;
-import com.google.cloud.bigquery.DatasetInfo;
-import com.google.cloud.bigquery.EmptyTableResult;
-import com.google.cloud.bigquery.InsertAllRequest;
-import com.google.cloud.bigquery.InsertAllResponse;
-import com.google.cloud.bigquery.Job;
-import com.google.cloud.bigquery.JobId;
-import com.google.cloud.bigquery.JobInfo;
-import com.google.cloud.bigquery.QueryJobConfiguration;
-import com.google.cloud.bigquery.Schema;
-import com.google.cloud.bigquery.StandardTableDefinition;
-import com.google.cloud.bigquery.TableDefinition;
-import com.google.cloud.bigquery.TableId;
-import com.google.cloud.bigquery.TableInfo;
-import com.google.cloud.bigquery.TableResult;
+import com.google.cloud.bigquery.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 import org.squidmin.java.spring.gradle.bigquery.config.BigQueryConfig;
 import org.squidmin.java.spring.gradle.bigquery.config.DataTypes;
+import org.squidmin.java.spring.gradle.bigquery.config.tables.sandbox.SchemaDefault;
+import org.squidmin.java.spring.gradle.bigquery.config.tables.sandbox.SelectFieldsDefault;
+import org.squidmin.java.spring.gradle.bigquery.config.tables.sandbox.WhereFieldsDefault;
 import org.squidmin.java.spring.gradle.bigquery.dao.RecordExample;
+import org.squidmin.java.spring.gradle.bigquery.dto.ExampleResponse;
+import org.squidmin.java.spring.gradle.bigquery.dto.ExampleResponseItem;
 import org.squidmin.java.spring.gradle.bigquery.dto.Query;
-import org.squidmin.java.spring.gradle.bigquery.dto.ResponseExample;
 import org.squidmin.java.spring.gradle.bigquery.exception.CustomJobException;
 import org.squidmin.java.spring.gradle.bigquery.logger.Logger;
 import org.squidmin.java.spring.gradle.bigquery.util.BigQueryUtil;
-import org.squidmin.java.spring.gradle.bigquery.config.ExampleSchema;
+import org.squidmin.java.spring.gradle.bigquery.util.StringUtils;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
-@EnableConfigurationProperties(value = {ExampleSchema.class, DataTypes.class})
+@EnableConfigurationProperties(value = {
+    SchemaDefault.class,
+    SelectFieldsDefault.class,
+    WhereFieldsDefault.class,
+    DataTypes.class,
+})
 public class BigQueryAdminClient {
 
-    private final String projectId, datasetName, tableName;
+    private final String gcpDefaultUserProjectId, gcpDefaultUserDataset, gcpDefaultUserTable;
+    private final String gcpSaProjectId, gcpSaDataset, gcpSaTable;
 
     private final BigQuery bq;
 
     private final BigQueryConfig bqConfig;
 
+    private final RestTemplate restTemplate;
+
     private final ObjectMapper mapper;
 
     @Autowired
-    public BigQueryAdminClient(BigQueryConfig bqConfig) {
+    public BigQueryAdminClient(BigQueryConfig bqConfig, RestTemplate restTemplate) {
         this.bqConfig = bqConfig;
         this.bq = bqConfig.getBigQuery();
-        this.projectId = bqConfig.getProjectId();
-        this.datasetName = bqConfig.getDatasetName();
-        this.tableName = bqConfig.getTableName();
+        this.gcpDefaultUserProjectId = bqConfig.getGcpDefaultUserProjectId();
+        this.gcpDefaultUserDataset = bqConfig.getGcpDefaultUserDataset();
+        this.gcpDefaultUserTable = bqConfig.getGcpDefaultUserTable();
+        this.gcpSaProjectId = bqConfig.getGcpSaProjectId();
+        this.gcpSaDataset = bqConfig.getGcpSaDataset();
+        this.gcpSaTable = bqConfig.getGcpSaTable();
+        this.restTemplate = restTemplate;
         mapper = new ObjectMapper();
     }
 
-    public void listDatasets(String projectId) {
+    public void listDatasets() {
         try {
-            Page<Dataset> datasets = bq.listDatasets(projectId, BigQuery.DatasetListOption.pageSize(100));
+            Page<Dataset> datasets = bq.listDatasets(gcpDefaultUserProjectId, BigQuery.DatasetListOption.pageSize(100));
             if (null == datasets) {
-                Logger.log("Dataset does not contain any models.", Logger.LogType.CYAN);
+                Logger.log(String.format("Dataset \"%s\" does not contain any models.", gcpDefaultUserDataset), Logger.LogType.ERROR);
                 return;
             }
-            AtomicInteger count = new AtomicInteger();
-            datasets.iterateAll().forEach(
-                dataset -> {
-                    Logger.log(
-                        String.format("Dataset ID: %s", dataset.getDatasetId()),
-                        Logger.LogType.INFO
-                    );
-                    count.getAndIncrement();
-                }
-            );
-            if (0 == count.get()) { Logger.log("Project does not contain any datasets.", Logger.LogType.ERROR); }
+            BigQueryUtil.logDatasets(gcpDefaultUserProjectId, datasets);
         } catch (BigQueryException e) {
-            Logger.log("Project does not contain any datasets.", Logger.LogType.ERROR);
+            Logger.log(String.format("Project \"%s\" does not contain any datasets.", gcpDefaultUserProjectId), Logger.LogType.ERROR);
             Logger.log(e.getMessage(), Logger.LogType.ERROR);
         }
     }
 
-    public boolean datasetExists(String datasetName) {
+    public boolean createDataset(String dataset) {
         try {
-            Dataset dataset = bq.getDataset(DatasetId.of(datasetName));
-            if (dataset != null) {
-                Logger.log("Dataset exists.", Logger.LogType.CYAN);
-                return true;
-            } else {
-                Logger.log("Dataset not found.", Logger.LogType.CYAN);
-            }
-        } catch (BigQueryException e) {
-            Logger.log("Something went wrong.", Logger.LogType.ERROR);
-            Logger.log(e.getMessage(), Logger.LogType.ERROR);
-        }
-        return false;
-    }
-
-    public boolean createDataset(String datasetName) {
-        try {
-            DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetName).build();
+            DatasetInfo datasetInfo = DatasetInfo.newBuilder(dataset).build();
             Dataset newDataset = bq.create(datasetInfo);
             String newDatasetName = newDataset.getDatasetId().getDataset();
-            Logger.log(String.format("Dataset %s created successfully.", newDatasetName), Logger.LogType.INFO);
+            Logger.log(String.format("Dataset \"%s\" created successfully.", newDatasetName), Logger.LogType.INFO);
         } catch (BigQueryException e) {
             Logger.log(
-                String.format("%s: Dataset \"%s\" was not created.", e.getClass().getName(), datasetName),
+                String.format("%s: Dataset \"%s\" was not created.", e.getClass().getName(), dataset),
                 Logger.LogType.ERROR
             );
             Logger.log(e.getMessage(), Logger.LogType.ERROR);
@@ -120,44 +93,50 @@ public class BigQueryAdminClient {
         return true;
     }
 
-    public void deleteDataset(String projectId, String datasetName) {
+    public void deleteDataset(String projectId, String dataset) {
         try {
-            DatasetId datasetId = DatasetId.of(projectId, datasetName);
-            boolean success = bq.delete(datasetId, BigQuery.DatasetDeleteOption.deleteContents());
-            if (success) { Logger.log("Dataset deleted successfully", Logger.LogType.INFO); }
-            else { Logger.log("Dataset was not found", Logger.LogType.INFO); }
+            DatasetId datasetId = DatasetId.of(projectId, dataset);
+            boolean success = bq.delete(datasetId);
+            if (success) {
+                Logger.log(String.format("Dataset \"%s\" deleted successfully.", dataset), Logger.LogType.INFO);
+            } else {
+                Logger.log(String.format("Dataset \"%s\" was not found in project \"%s\".", dataset, projectId), Logger.LogType.INFO);
+            }
         } catch (BigQueryException e) {
-            Logger.log(String.format("Dataset '%s' was not deleted.", datasetName), Logger.LogType.ERROR);
+            Logger.log(String.format("Dataset \"%s\" was not deleted.", dataset), Logger.LogType.ERROR);
         }
     }
 
-    public void deleteDatasetAndContents(String projectId, String datasetName) {
+    public void deleteDatasetAndContents(String projectId, String dataset) {
         try {
-            DatasetId datasetId = DatasetId.of(projectId, datasetName);
-            // Use the force parameter to delete a dataset and its contents
+            DatasetId datasetId = DatasetId.of(projectId, dataset);
             boolean success = bq.delete(datasetId, BigQuery.DatasetDeleteOption.deleteContents());
-            if (success) { Logger.log("Dataset deleted with contents successfully", Logger.LogType.INFO); }
-            else { Logger.log("Dataset was not found", Logger.LogType.INFO); }
+            if (success) {
+                Logger.log(String.format("Dataset \"%s\" and its contents deleted successfully.", dataset), Logger.LogType.INFO);
+            } else {
+                Logger.log(String.format("Dataset \"%s\" was not found in project \"%s\".", dataset, projectId), Logger.LogType.INFO);
+            }
         } catch (BigQueryException e) {
-            Logger.log(String.format("Dataset '%s' was not deleted with contents.", datasetName), Logger.LogType.ERROR);
+            Logger.log(String.format("Dataset \"%s\" was not deleted with contents.", dataset), Logger.LogType.ERROR);
         }
     }
 
-    public boolean createTable(String datasetName, String tableName) {
-        return createTable(datasetName, tableName, BigQueryUtil.translate(bqConfig.getSchema()));
+    public boolean createTable(String dataset, String table) {
+        Schema schema = BigQueryUtil.InlineSchemaTranslator.translate(bqConfig.getSchemaDefault(), bqConfig.getDataTypes());
+        return createTable(dataset, table, schema);
     }
 
-    public boolean createTable(String datasetName, String tableName, Schema schema) {
+    public boolean createTable(String dataset, String table, Schema schema) {
         try {
-            TableId tableId = TableId.of(datasetName, tableName);
+            TableId tableId = TableId.of(dataset, table);
             TableDefinition tableDefinition = StandardTableDefinition.of(schema);
             TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
-            Logger.logCreateTable(tableInfo);
+            BigQueryUtil.logCreateTable(tableInfo);
             bq.create(tableInfo);
-            Logger.log("Table created successfully.", Logger.LogType.INFO);
+            Logger.log(String.format("Table \"%s\" created successfully.", table), Logger.LogType.INFO);
         } catch (BigQueryException e) {
             Logger.log(
-                String.format("%s: Table \"%s\" was not created.", e.getClass().getName(), tableName),
+                String.format("%s: Table \"%s\" was not created.", e.getClass().getName(), table),
                 Logger.LogType.ERROR
             );
             Logger.log(e.getMessage(), Logger.LogType.ERROR);
@@ -166,32 +145,35 @@ public class BigQueryAdminClient {
         return true;
     }
 
-    public void deleteTable(String projectId, String datasetName, String tableName) {
+    public void deleteTable(String projectId, String dataset, String table) {
         try {
-            boolean success = bq.delete(TableId.of(datasetName, tableName));
-            if (success) { Logger.log("Table deleted successfully", Logger.LogType.INFO); }
-            else { Logger.log("Table was not found", Logger.LogType.INFO); }
+            boolean success = bq.delete(TableId.of(projectId, dataset, table));
+            if (success) {
+                Logger.log("Table deleted successfully", Logger.LogType.INFO);
+            } else {
+                Logger.log("Table was not found", Logger.LogType.INFO);
+            }
         } catch (BigQueryException e) {
-            Logger.log(String.format("Table %s was not deleted.", tableName), Logger.LogType.ERROR);
+            Logger.log(String.format("Table %s was not deleted.", table), Logger.LogType.ERROR);
             Logger.log(e.getMessage(), Logger.LogType.ERROR);
         }
     }
 
-    public List<InsertAllRequest.RowToInsert> insert(List<RecordExample> records) {
+    public List<InsertAllRequest.RowToInsert> insert(String projectId, String dataset, String table, List<RecordExample> records) {
         try {
             List<InsertAllRequest.RowToInsert> rowsToInsert = new ArrayList<>();
 
-            TableId tableId = TableId.of(datasetName, tableName);
+            TableId tableId = TableId.of(projectId, dataset, table);
 
             Map<String, Object> rowContent = new HashMap<>();
-            for (RecordExample record : records) {
-                rowContent.put("id", record.getId());
-                rowContent.put("fieldA", record.getFieldA());
-                rowContent.put("fieldB", record.getFieldB());
-                rowContent.put("fieldC", record.getFieldC());
-                rowContent.put("fieldD", record.getFieldD());
+
+            records.forEach(record -> {
+                bqConfig.getSchemaDefault().getFields().forEach(field -> {
+                    String fieldName = field.getName();
+                    rowContent.put(fieldName, record.getField(fieldName));
+                });
                 rowsToInsert.add(InsertAllRequest.RowToInsert.of(UUID.randomUUID().toString(), rowContent));
-            }
+            });
 
             InsertAllResponse response = bq.insertAll(
                 InsertAllRequest.newBuilder(tableId)
@@ -257,11 +239,37 @@ public class BigQueryAdminClient {
         return new EmptyTableResult(Schema.of());
     }
 
-    public ResponseExample restfulQuery(Query query) throws JsonProcessingException {
+    public ResponseEntity<ExampleResponse> restfulQuery(Query query) throws IOException {
         String _query = mapper.writeValueAsString(query);
         Logger.log(String.format("QUERY == %s", _query), Logger.LogType.INFO);
-        // TODO: Implement remainder of query method for GCP BigQuery REST API.
-        return null;
+        String uri = bqConfig.getQueryUri();
+        HttpHeaders httpHeaders = getHttpHeaders();
+        HttpEntity<String> request = new HttpEntity<>(mapper.writeValueAsString(query), httpHeaders);
+        try {
+            ResponseEntity<String> responseEntity = restTemplate.postForEntity(uri, request, String.class);
+            String responseBody = responseEntity.getBody();
+            if (!StringUtils.isEmpty(responseBody)) {
+                return new ResponseEntity<>(
+                    ExampleResponse.builder()
+                        .body(BigQueryUtil.toList(responseBody.getBytes(StandardCharsets.UTF_8), bqConfig.getSelectFieldsDefault(), true))
+                        .build(),
+                    HttpStatus.OK
+                );
+            } else {
+                Logger.log("Response body is empty.", Logger.LogType.ERROR);
+            }
+        } catch (HttpClientErrorException e) {
+            String errorMessage = e.getMessage();
+            Logger.log(errorMessage, Logger.LogType.ERROR);
+            return new ResponseEntity<>(
+                ExampleResponse.builder()
+                    .body(Collections.singletonList(ExampleResponseItem.builder().build()))
+                    .errors(Collections.singletonList(errorMessage))
+                    .build(),
+                e.getStatusCode()
+            );
+        }
+        return new ResponseEntity<>(ExampleResponse.builder().build(), HttpStatus.OK);
     }
 
     public TableResult queryBatch(String query) {
@@ -279,12 +287,13 @@ public class BigQueryAdminClient {
         return null;
     }
 
-    public TableResult queryById(String id) {
-        String template =
-            "SELECT * " +
-            "FROM `%s.%s.%s` " +
-            "WHERE id = '%s'";
-        return query(String.format(template, projectId, datasetName, tableName, id));
+
+    private HttpHeaders getHttpHeaders() {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add("Authorization", "Bearer ".concat(bqConfig.getGcpAdcAccessToken()));
+        httpHeaders.add("Accept", MediaType.APPLICATION_JSON_VALUE);
+        httpHeaders.add("Content-Type", MediaType.APPLICATION_JSON_VALUE);
+        return httpHeaders;
     }
 
 }
