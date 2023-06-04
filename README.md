@@ -1,10 +1,16 @@
 # java11-spring-gradle-bigquery-reference
 
 
+<details>
+<summary>About</summary>
+
 Made with:
-- **IntelliJ IDEA 2023.1 (Ultimate Edition)**
-- **openjdk 11.0.17**
+- **Adoptium Temurin OpenJDK 11.0.17**
+- **Spring Boot v2.7.10**
 - **Gradle 7.6.1**
+- **IntelliJ IDEA 2023.1 (Ultimate Edition)**
+
+</details>
 
 
 ---
@@ -29,7 +35,7 @@ gcloud init
 
 
 <details>
-<summary>Application Default Credentials (ADC) usage</summary>
+<summary>gcloud CLI: Application Default Credentials (ADC) usage</summary>
 
 ```shell
 gcloud auth login
@@ -40,22 +46,92 @@ gcloud auth application-default login
 
 
 <details>
-<summary>Echo a GCP service account access token</summary>
+<summary>gcloud CLI: Generate an Application Default Credentials (ADC) access token</summary>
 
-Run this command to assign a GCP access token to an environment variable on your system:
+If you're running the application locally, you can use the following command to generate an access token:
 
 ```shell
-export GOOGLE_APPLICATION_CREDENTIALS=$(gcloud auth print-access-token --impersonate-service-account='SA_EMAIL_ADDRESS')
+export GCP_ADC_ACCESS_TOKEN="$(gcloud auth application-default print-access-token)"
+```
+
+</details>
+
+
+<details>
+<summary>gcloud CLI: Generate a GCP service account access token</summary>
+
+Run this command to generate an access token for a specific GCP service account:
+
+```shell
+export GCP_SA_ACCESS_TOKEN=$(gcloud auth print-access-token --impersonate-service-account='GCP_SA_EMAIL_ADDRESS')
 ```
 
 **Replace the following**:
-- `SA_EMAIL_ADDRESS`: the email address of the service account to impersonate.
+- `GCP_SA_EMAIL_ADDRESS`: the email address of the service account to impersonate.
 
 Example:
 
 ```shell
-export GOOGLE_APPLICATION_CREDENTIALS=$(gcloud auth print-access-token --impersonate-service-account='9644524330-compute@developer.gserviceaccount.com')
+export GCP_SA_ACCESS_TOKEN=$(gcloud auth print-access-token --impersonate-service-account='sa-developer@your-sa-name.iam.gserviceaccount.com')
 ```
+
+</details>
+
+
+<details>
+<summary>Create and store a service account key</summary>
+
+This section refers to usage of a GCP service account key (.json) file stored on your local file system.
+
+To map a local `gcloud` installation to a volume on a container instance running the application, include the `-v` parameter in the `docker run` command used to start a container instance, as described below.
+
+### macOS
+
+Assuming the user's service account key file is stored in the same directory as their local `gcloud` installation:
+
+`/Users/USERNAME/.config/gcloud`
+
+```shell
+export LOCAL_GCLOUD_AUTH_DIRECTORY=$HOME/.config/gcloud
+```
+
+and the target volume on the container instance is:
+
+`/root/.config/gcloud`
+
+```shell
+export CONTAINER_GCLOUD_AUTH_DIRECTORY=/root/.config/gcloud
+```
+
+the command to run the container instance would be:
+
+```shell
+docker run --rm -it \
+  -e GCP_SA_KEY_PATH=$GCP_SA_KEY_PATH \
+  -e GCP_ADC_ACCESS_TOKEN=$GCP_ADC_ACCESS_TOKEN \
+  -e GCP_SA_ACCESS_TOKEN=$GCP_SA_ACCESS_TOKEN \
+  -e GCP_DEFAULT_USER_PROJECT_ID=$GCP_DEFAULT_USER_PROJECT_ID \
+  -e GCP_DEFAULT_USER_DATASET=$GCP_DEFAULT_USER_DATASET \
+  -e GCP_DEFAULT_USER_TABLE=$GCP_DEFAULT_USER_TABLE \
+  -e GCP_SA_PROJECT_ID=$GCP_SA_PROJECT_ID \
+  -e GCP_SA_DATASET=$GCP_SA_DATASET \
+  -e GCP_SA_TABLE=$GCP_SA_TABLE \
+  -v ${LOCAL_GCLOUD_AUTH_DIRECTORY}:${CONTAINER_GCLOUD_AUTH_DIRECTORY} \
+  -v ${LOCAL_MAVEN_REPOSITORY}:${CONTAINER_MAVEN_REPOSITORY} \
+  java11-spring-gradle-bigquery-reference
+```
+
+**Replace the following** in the path to the `gcloud` directory:
+
+- `USERNAME`: the current OS user's username
+
+so that the path to the service account key file is correct, e.g.:
+
+`/Users/squidmin/.config/gcloud/sa-private-key.json`
+
+Read <a href="https://cloud.google.com/iam/docs/keys-create-delete#iam-service-account-keys-create-gcloud">here</a> for more information about creating service account keys.
+
+Read <a href="">here</a> for more information about run config CLI arguments.
 
 </details>
 
@@ -64,11 +140,17 @@ export GOOGLE_APPLICATION_CREDENTIALS=$(gcloud auth print-access-token --imperso
 <summary>Activate GCP service account</summary>
 
 ```shell
-gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
+gcloud auth activate-service-account --key-file=GCP_SA_KEY_FILE
 ```
 
 **Replace the following**:
-- `GOOGLE_APPLICATION_CREDENTIALS`: the user's service account key.
+- `GCP_SA_KEY_FILE`: path to the user's service account key file.
+
+Example:
+
+```shell
+gcloud auth activate-service-account --key-file='/Users/squidmin/.config/gcloud/sa-private-key.json'
+```
 
 </details>
 
@@ -77,7 +159,7 @@ gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS
 <summary>Set the active GCP project</summary>
 
 ```shell
-gcloud config set project ${GCP_PROJECT_ID}
+gcloud config set project ${GCP_DEFAULT_USER_PROJECT_ID}
 ```
 
 </details>
@@ -99,6 +181,14 @@ gcloud components list
 ```shell
 gcloud components update
 ```
+
+</details>
+
+
+<details>
+<summary>CLI reference table: Run configuration</summary>
+
+
 
 </details>
 
@@ -237,7 +327,7 @@ bq --location=us mk \
   --label=test_label_2:test_value_2 \
   --max_time_travel_hours=168 \
   --storage_billing_model=LOGICAL \
-  lofty-root-378503:test_dataset_name_lofty
+  lofty-root-378503:test_dataset_integration
 ```
 
 The Cloud Key Management Service (KMS) key parameter (`KMS_KEY_NAME`) can be specified.
@@ -249,7 +339,7 @@ bq --location=us mk \
   --dataset \
   --default_kms_key=KMS_KEY_NAME \
   ...
-  lofty-root-378503:test_dataset_name_lofty
+  lofty-root-378503:test_dataset_integration
 ```
 
 </details>
@@ -265,7 +355,7 @@ Refer to the <a href="https://cloud.google.com/bigquery/docs/managing-datasets#d
 Remove all tables in the dataset (`-r` flag):
 
 ```shell
-bq rm -r -f -d lofty-root-378503:test_dataset_name_lofty
+bq rm -r -f -d lofty-root-378503:test_dataset_integration
 ```
 
 </details>
@@ -290,8 +380,8 @@ Example:
 
 ```shell
 bq mk --table \
-  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \
-  id:STRING,fieldA:STRING,fieldB:STRING,fieldC:STRING,fieldD:STRING
+  lofty-root-378503:test_dataset_integration.test_table_integration \
+  id:STRING,creation_timestamp:DATETIME,last_update_timestamp:DATETIME,column_a:STRING,column_b:BOOL
 ```
 
 ### Specify the schema in a JSON schema file
@@ -310,7 +400,7 @@ Example:
 
 ```shell
 bq mk --table \
-  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \
+  lofty-root-378503:test_dataset_integration.test_table_integration \
   ./schema/example.json
 ```
 
@@ -329,7 +419,7 @@ Example:
 ```shell
 bq --location=us load \
   --source_format=CSV \
-  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \
+  lofty-root-378503:test_dataset_integration.test_table_integration \
   ./csv/example.csv \
   ./schema/example.json
 ```
@@ -343,7 +433,7 @@ Refer to the BigQuery documentation: <a href="https://cloud.google.com/bigquery/
 <summary>Delete a table</summary>
 
 ```shell
-bq rm --table test_dataset_name_lofty.test_table_name_lofty
+bq rm --table test_dataset_integration.test_table_integration
 ```
 
 </details>
@@ -358,7 +448,7 @@ Example:
 bq show \
   --schema \
   --format=prettyjson \
-  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty
+  lofty-root-378503:test_dataset_integration.test_table_integration
 ```
 
 The table schema can be written to a file:
@@ -367,7 +457,7 @@ The table schema can be written to a file:
 bq show \
   --schema \
   --format=prettyjson \
-  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \ > ./schema/example_show-write.json
+  lofty-root-378503:test_dataset_integration.test_table_integration \ > ./schema/example_show-write.json
 ```
 
 </details>
@@ -378,7 +468,7 @@ bq show \
 
 ```shell
 bq update \
-  lofty-root-378503:test_dataset_name_lofty.test_table_name_lofty \
+  lofty-root-378503:test_dataset_integration.test_table_integration \
   ./schema/example_update.json
 ```
 
@@ -395,7 +485,7 @@ Refer to the <a href="https://cloud.google.com/bigquery/docs/managing-table-sche
 Insert for known values:
 
 ```shell
-bq insert test_dataset_name_lofty.test_table_name_lofty ./json/example.json
+bq insert test_dataset_integration.test_table_integration ./json/example.json
 ```
 
 Specify a template suffix (`--template_suffix` or `-x`):
@@ -403,7 +493,7 @@ Specify a template suffix (`--template_suffix` or `-x`):
 ```shell
 bq insert --ignore_unknown_values \
   --template_suffix=_insert \
-  test_dataset_name_lofty.test_table_name_lofty \
+  test_dataset_integration.test_table_integration \
   ./json/example.json
 ```
 
@@ -429,7 +519,7 @@ bq query \
   'SELECT
     id, fieldC
   FROM
-    `lofty-root-378503.test_dataset_name_lofty.test_table_name_lofty`
+    `lofty-root-378503.test_dataset_integration.test_table_integration`
   LIMIT
     3;'
 ```

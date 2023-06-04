@@ -1,4 +1,5 @@
 #!/bin/bash
+
 docker run \
   --rm -it \
   -e GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS \

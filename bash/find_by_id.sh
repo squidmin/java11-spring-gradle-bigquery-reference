@@ -1,4 +1,5 @@
 #!/bin/bash
+
 ./gradlew cleanTest test \
   -Dprofile=integration \
   --no-build-cache --tests \

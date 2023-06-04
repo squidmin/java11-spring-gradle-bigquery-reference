@@ -1,4 +1,5 @@
 #!/bin/bash
+
 ./gradlew cleanTest test \
   --no-build-cache \
   --tests=org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClientIntegrationTest.createDataset \
