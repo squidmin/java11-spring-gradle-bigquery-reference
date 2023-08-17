@@ -31,6 +31,10 @@ ext {
 	set('springCloudVersion', "2021.0.6")
 }
 
+springBoot {
+	mainClass = 'com.ford.nacustoms.classifications.ClassificationsApplication'
+}
+
 dependencies {
 	// Core libraries
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -43,6 +47,8 @@ dependencies {
 	// BigQuery
 	implementation platform('com.google.cloud:libraries-bom:26.11.0')
 	implementation 'com.google.cloud:google-cloud-bigquery:2.24.2'
+
+	implementation 'com.github.jknack:handlebars:4.3.1'
 
 	// SnakeYAML
 	implementation ('org.yaml:snakeyaml') {
@@ -64,7 +70,6 @@ dependencies {
 	testImplementation 'org.springframework:spring-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-	testImplementation 'junit:junit:4.13.1'
 
 	testCompileOnly 'org.projectlombok:lombok:1.18.12'
 	testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
@@ -92,7 +97,7 @@ tasks.named('test') {
 
 	systemProperty 'SCHEMA', System.getProperty('SCHEMA')
 
-	exclude '**/BigQueryAdminClientIntegrationTest.class'
+	exclude '**/BigQueryAdminClientTest.class'
 	exclude '**/ControllerTest.class'
 
 	testLogging {

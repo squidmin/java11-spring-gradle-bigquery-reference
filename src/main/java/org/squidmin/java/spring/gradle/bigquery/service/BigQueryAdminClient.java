@@ -11,17 +11,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.squidmin.java.spring.gradle.bigquery.config.BigQueryConfig;
+import org.squidmin.java.spring.gradle.bigquery.config.BigQueryOptionsConfig;
 import org.squidmin.java.spring.gradle.bigquery.config.DataTypes;
+import org.squidmin.java.spring.gradle.bigquery.config.Exclusions;
 import org.squidmin.java.spring.gradle.bigquery.config.tables.sandbox.SchemaDefault;
 import org.squidmin.java.spring.gradle.bigquery.config.tables.sandbox.SelectFieldsDefault;
 import org.squidmin.java.spring.gradle.bigquery.config.tables.sandbox.WhereFieldsDefault;
 import org.squidmin.java.spring.gradle.bigquery.dao.RecordExample;
+import org.squidmin.java.spring.gradle.bigquery.dto.ExampleRequest;
 import org.squidmin.java.spring.gradle.bigquery.dto.ExampleResponse;
 import org.squidmin.java.spring.gradle.bigquery.dto.ExampleResponseItem;
 import org.squidmin.java.spring.gradle.bigquery.dto.Query;
 import org.squidmin.java.spring.gradle.bigquery.exception.CustomJobException;
 import org.squidmin.java.spring.gradle.bigquery.logger.Logger;
 import org.squidmin.java.spring.gradle.bigquery.util.BigQueryUtil;
+import org.squidmin.java.spring.gradle.bigquery.util.LoggerUtil;
 import org.squidmin.java.spring.gradle.bigquery.util.StringUtils;
 
 import java.io.IOException;
@@ -34,30 +38,35 @@ import java.util.*;
     SelectFieldsDefault.class,
     WhereFieldsDefault.class,
     DataTypes.class,
+    Exclusions.class,
 })
 public class BigQueryAdminClient {
 
-    private final String gcpDefaultUserProjectId, gcpDefaultUserDataset, gcpDefaultUserTable;
-    private final String gcpSaProjectId, gcpSaDataset, gcpSaTable;
+    private final String gcpDefaultUserProjectId;
+    private final String gcpDefaultUserDataset;
+    private final String gcpDefaultUserTable;
+    private final String gcpSaProjectId;
+    private final String gcpSaDataset;
+    private final String gcpSaTable;
 
-    private final BigQuery bq;
+    private final BigQuery bigQuery;
 
-    private final BigQueryConfig bqConfig;
+    private final BigQueryConfig bigQueryConfig;
 
     private final RestTemplate restTemplate;
 
     private final ObjectMapper mapper;
 
     @Autowired
-    public BigQueryAdminClient(BigQueryConfig bqConfig, RestTemplate restTemplate) {
-        this.bqConfig = bqConfig;
-        this.bq = bqConfig.getBigQuery();
-        this.gcpDefaultUserProjectId = bqConfig.getGcpDefaultUserProjectId();
-        this.gcpDefaultUserDataset = bqConfig.getGcpDefaultUserDataset();
-        this.gcpDefaultUserTable = bqConfig.getGcpDefaultUserTable();
-        this.gcpSaProjectId = bqConfig.getGcpSaProjectId();
-        this.gcpSaDataset = bqConfig.getGcpSaDataset();
-        this.gcpSaTable = bqConfig.getGcpSaTable();
+    public BigQueryAdminClient(BigQueryConfig bigQueryConfig, RestTemplate restTemplate) {
+        this.bigQueryConfig = bigQueryConfig;
+        this.bigQuery = bigQueryConfig.getBigQueryOptionsConfig().getBigQuery();
+        this.gcpDefaultUserProjectId = bigQueryConfig.getGcpDefaultUserProjectId();
+        this.gcpDefaultUserDataset = bigQueryConfig.getGcpDefaultUserDataset();
+        this.gcpDefaultUserTable = bigQueryConfig.getGcpDefaultUserTable();
+        this.gcpSaProjectId = bigQueryConfig.getGcpSaProjectId();
+        this.gcpSaDataset = bigQueryConfig.getGcpSaDataset();
+        this.gcpSaTable = bigQueryConfig.getGcpSaTable();
         this.restTemplate = restTemplate;
         mapper = new ObjectMapper();
     }
@@ -65,18 +74,27 @@ public class BigQueryAdminClient {
     /**
      * <a href="https://cloud.google.com/bigquery/docs/listing-datasets#list_datasets">List datasets</a>
      */
-    public void listDatasets() {
+    public List<String> listDatasets() {
+        List<String> datasetsList = new ArrayList<>();
         try {
-            Page<Dataset> datasets = bq.listDatasets(gcpDefaultUserProjectId, BigQuery.DatasetListOption.pageSize(100));
+            Page<Dataset> datasets = bigQuery.listDatasets(gcpDefaultUserProjectId, BigQuery.DatasetListOption.pageSize(100));
             if (null == datasets) {
-                Logger.log(String.format("Dataset \"%s\" does not contain any models.", gcpDefaultUserDataset), Logger.LogType.ERROR);
-                return;
+                Logger.log(
+                    String.format("Dataset \"%s\" does not contain any models.", gcpDefaultUserDataset),
+                    Logger.LogType.ERROR
+                );
+                return new ArrayList<>();
             }
-            BigQueryUtil.logDatasets(gcpDefaultUserProjectId, datasets);
+            datasets.iterateAll().forEach(dataset -> datasetsList.add(dataset.getFriendlyName()));
+            LoggerUtil.logDatasets(gcpDefaultUserProjectId, datasets);
         } catch (BigQueryException e) {
-            Logger.log(String.format("Project \"%s\" does not contain any datasets.", gcpDefaultUserProjectId), Logger.LogType.ERROR);
+            Logger.log(
+                String.format("Project \"%s\" does not contain any datasets.", gcpDefaultUserProjectId),
+                Logger.LogType.ERROR
+            );
             Logger.log(e.getMessage(), Logger.LogType.ERROR);
         }
+        return datasetsList;
     }
 
     /**
@@ -85,7 +103,7 @@ public class BigQueryAdminClient {
     public void getDatasetInfo() {
         try {
             DatasetId datasetId = DatasetId.of(gcpDefaultUserProjectId, gcpDefaultUserDataset);
-            Dataset dataset = bq.getDataset(datasetId);
+            Dataset dataset = bigQuery.getDataset(datasetId);
 
             // View dataset properties
             String description = dataset.getDescription();
@@ -94,7 +112,7 @@ public class BigQueryAdminClient {
             // View tables in the dataset
             // For more information on listing tables see:
             // https://javadoc.io/static/com.google.cloud/google-cloud-bigquery/0.22.0-beta/com/google/cloud/bigquery/BigQuery.html
-            Page<Table> tables = bq.listTables(gcpDefaultUserDataset, BigQuery.TableListOption.pageSize(100));
+            Page<Table> tables = bigQuery.listTables(gcpDefaultUserDataset, BigQuery.TableListOption.pageSize(100));
 
             tables.iterateAll().forEach(table -> Logger.log(table.getTableId().getTable() + "\n", Logger.LogType.INFO));
 
@@ -107,7 +125,7 @@ public class BigQueryAdminClient {
     public boolean createDataset(String dataset) {
         try {
             DatasetInfo datasetInfo = DatasetInfo.newBuilder(dataset).build();
-            Dataset newDataset = bq.create(datasetInfo);
+            Dataset newDataset = bigQuery.create(datasetInfo);
             String newDatasetName = newDataset.getDatasetId().getDataset();
             Logger.log(String.format("Dataset \"%s\" created successfully.", newDatasetName), Logger.LogType.INFO);
         } catch (BigQueryException e) {
@@ -124,7 +142,7 @@ public class BigQueryAdminClient {
     public void deleteDataset(String projectId, String dataset) {
         try {
             DatasetId datasetId = DatasetId.of(projectId, dataset);
-            boolean success = bq.delete(datasetId);
+            boolean success = bigQuery.delete(datasetId);
             if (success) {
                 Logger.log(String.format("Dataset \"%s\" deleted successfully.", dataset), Logger.LogType.INFO);
             } else {
@@ -138,7 +156,7 @@ public class BigQueryAdminClient {
     public void deleteDatasetAndContents(String projectId, String dataset) {
         try {
             DatasetId datasetId = DatasetId.of(projectId, dataset);
-            boolean success = bq.delete(datasetId, BigQuery.DatasetDeleteOption.deleteContents());
+            boolean success = bigQuery.delete(datasetId, BigQuery.DatasetDeleteOption.deleteContents());
             if (success) {
                 Logger.log(String.format("Dataset \"%s\" and its contents deleted successfully.", dataset), Logger.LogType.INFO);
             } else {
@@ -150,7 +168,7 @@ public class BigQueryAdminClient {
     }
 
     public boolean createTable(String dataset, String table) {
-        Schema schema = BigQueryUtil.InlineSchemaTranslator.translate(bqConfig.getSchemaDefault(), bqConfig.getDataTypes());
+        Schema schema = BigQueryUtil.InlineSchemaTranslator.translate(bigQueryConfig.getSchemaDefault(), bigQueryConfig.getDataTypes());
         return createTable(dataset, table, schema);
     }
 
@@ -159,8 +177,8 @@ public class BigQueryAdminClient {
             TableId tableId = TableId.of(dataset, table);
             TableDefinition tableDefinition = StandardTableDefinition.of(schema);
             TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
-            BigQueryUtil.logCreateTable(tableInfo);
-            bq.create(tableInfo);
+            LoggerUtil.logCreateTable(tableInfo);
+            bigQuery.create(tableInfo);
             Logger.log(String.format("Table \"%s\" created successfully.", table), Logger.LogType.INFO);
         } catch (BigQueryException e) {
             Logger.log(
@@ -175,7 +193,7 @@ public class BigQueryAdminClient {
 
     public void deleteTable(String projectId, String dataset, String table) {
         try {
-            boolean success = bq.delete(TableId.of(projectId, dataset, table));
+            boolean success = bigQuery.delete(TableId.of(projectId, dataset, table));
             if (success) {
                 Logger.log("Table deleted successfully", Logger.LogType.INFO);
             } else {
@@ -190,27 +208,22 @@ public class BigQueryAdminClient {
     public List<InsertAllRequest.RowToInsert> insert(String projectId, String dataset, String table, List<RecordExample> records) {
         try {
             List<InsertAllRequest.RowToInsert> rowsToInsert = new ArrayList<>();
-
             TableId tableId = TableId.of(projectId, dataset, table);
-
             Map<String, Object> rowContent = new HashMap<>();
-
             records.forEach(record -> {
-                bqConfig.getSchemaDefault().getFields().forEach(field -> {
+                bigQueryConfig.getSchemaDefault().getFields().forEach(field -> {
                     String fieldName = field.getName();
                     rowContent.put(fieldName, record.getField(fieldName));
                 });
                 rowsToInsert.add(InsertAllRequest.RowToInsert.of(UUID.randomUUID().toString(), rowContent));
             });
-
-            InsertAllResponse response = bq.insertAll(
+            InsertAllResponse response = bigQuery.insertAll(
                 InsertAllRequest.newBuilder(tableId)
                     .setIgnoreUnknownValues(true)
                     .setSkipInvalidRows(true)
                     .setRows(rowsToInsert)
                     .build()
             );
-
             if (response.hasErrors()) {
                 for (Map.Entry<Long, List<BigQueryError>> entry : response.getInsertErrors().entrySet()) {
                     Logger.log(String.format("Response error: %s", entry.getValue()), Logger.LogType.ERROR);
@@ -227,8 +240,53 @@ public class BigQueryAdminClient {
         return Collections.emptyList();
     }
 
+    public ResponseEntity<ExampleResponse> query(Query query, String bqApiToken) throws IOException {
+        String _query = mapper.writeValueAsString(query);
+        Logger.log(String.format("QUERY == %s", _query), Logger.LogType.INFO);
+        String uri = bigQueryConfig.getQueryUri();
+        HttpHeaders httpHeaders = getHttpHeaders(bqApiToken);
+        HttpEntity<String> request = new HttpEntity<>(mapper.writeValueAsString(query), httpHeaders);
+        try {
+            ResponseEntity<String> responseEntity = restTemplate.postForEntity(uri, request, String.class);
+            String responseBody = responseEntity.getBody();
+            if (!StringUtils.isEmpty(responseBody)) {
+                return new ResponseEntity<>(
+                    ExampleResponse.builder()
+                        .body(
+                            BigQueryUtil.toList(
+                                responseBody.getBytes(StandardCharsets.UTF_8),
+                                bigQueryConfig.getSelectFieldsDefault(),
+                                true
+                            )
+                        )
+                        .build(),
+                    HttpStatus.OK
+                );
+            } else {
+                Logger.log("Response body is empty.", Logger.LogType.ERROR);
+            }
+        } catch (HttpClientErrorException e) {
+            String errorMessage = e.getMessage();
+            Logger.log(errorMessage, Logger.LogType.ERROR);
+            return new ResponseEntity<>(
+                ExampleResponse.builder()
+                    .body(Collections.singletonList(ExampleResponseItem.builder().build()))
+                    .errors(Collections.singletonList(errorMessage))
+                    .build(),
+                e.getStatusCode()
+            );
+        }
+        return new ResponseEntity<>(ExampleResponse.builder().build(), HttpStatus.OK);
+    }
+
+    // TODO
+    public ResponseEntity<ExampleResponse> query(ExampleRequest request, String bqApiToken) {
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
     /**
      * <a href="https://cloud.google.com/bigquery/docs/running-queries#queries">Run an interactive query</a>
+     *
      * @param query A Google SQL query string.
      * @return TableResult The rows returned from the query.
      */
@@ -243,9 +301,9 @@ public class BigQueryAdminClient {
             String jobName = "jobId_" + UUID.randomUUID();
             JobId jobId = JobId.newBuilder().setLocation("us").setJob(jobName).build();
 
-            bq.create(JobInfo.of(jobId, queryConfig));  // Create a job with job ID.
+            bigQuery.create(JobInfo.of(jobId, queryConfig));  // Create a job with job ID.
 
-            Job job = bq.getJob(jobId);  // Get the job that was just created.
+            Job job = bigQuery.getJob(jobId);  // Get the job that was just created.
             String _job = job.getJobId().getJob();
             TableResult tableResult;
             if (null != _job && _job.equals(jobId.getJob())) {
@@ -272,41 +330,9 @@ public class BigQueryAdminClient {
         return new EmptyTableResult(Schema.of());
     }
 
-    public ResponseEntity<ExampleResponse> restfulQuery(Query query) throws IOException {
-        String _query = mapper.writeValueAsString(query);
-        Logger.log(String.format("QUERY == %s", _query), Logger.LogType.INFO);
-        String uri = bqConfig.getQueryUri();
-        HttpHeaders httpHeaders = getHttpHeaders();
-        HttpEntity<String> request = new HttpEntity<>(mapper.writeValueAsString(query), httpHeaders);
-        try {
-            ResponseEntity<String> responseEntity = restTemplate.postForEntity(uri, request, String.class);
-            String responseBody = responseEntity.getBody();
-            if (!StringUtils.isEmpty(responseBody)) {
-                return new ResponseEntity<>(
-                    ExampleResponse.builder()
-                        .body(BigQueryUtil.toList(responseBody.getBytes(StandardCharsets.UTF_8), bqConfig.getSelectFieldsDefault(), true))
-                        .build(),
-                    HttpStatus.OK
-                );
-            } else {
-                Logger.log("Response body is empty.", Logger.LogType.ERROR);
-            }
-        } catch (HttpClientErrorException e) {
-            String errorMessage = e.getMessage();
-            Logger.log(errorMessage, Logger.LogType.ERROR);
-            return new ResponseEntity<>(
-                ExampleResponse.builder()
-                    .body(Collections.singletonList(ExampleResponseItem.builder().build()))
-                    .errors(Collections.singletonList(errorMessage))
-                    .build(),
-                e.getStatusCode()
-            );
-        }
-        return new ResponseEntity<>(ExampleResponse.builder().build(), HttpStatus.OK);
-    }
-
     /**
      * <a href="https://cloud.google.com/bigquery/docs/running-queries#batch">Run a batch query</a>
+     *
      * @param query A Google SQL query string.
      * @return TableResult The rows returned from the query.
      */
@@ -317,7 +343,7 @@ public class BigQueryAdminClient {
                 .setPriority(QueryJobConfiguration.Priority.BATCH)
                 .build();
             Logger.log("Query batch performed successfully.", Logger.LogType.INFO);
-            return bq.query(queryConfig);
+            return bigQuery.query(queryConfig);
         } catch (BigQueryException | InterruptedException e) {
             Logger.log("Query batch not performed:", Logger.LogType.ERROR);
             Logger.log(String.format("%s", e.getMessage()), Logger.LogType.ERROR);
@@ -327,28 +353,40 @@ public class BigQueryAdminClient {
 
     /**
      * <a href="https://cloud.google.com/bigquery/docs/dry-run-queries#perform_dry_runs">Perform a query dry run</a>
+     *
      * @param query A Google SQL query string.
      */
     public void queryDryRun(String query) {
         try {
             QueryJobConfiguration queryConfig =
                 QueryJobConfiguration.newBuilder(query).setDryRun(true).setUseQueryCache(false).build();
-
-            Job job = bq.create(JobInfo.of(queryConfig));
+            Job job = bigQuery.create(JobInfo.of(queryConfig));
             JobStatistics.QueryStatistics statistics = job.getStatistics();
-
-            Logger.log("Query dry run performed successfully." + statistics.getTotalBytesProcessed(), Logger.LogType.INFO);
+            Logger.log(
+                "Query dry run performed successfully. Total bytes processed: " + statistics.getTotalBytesProcessed(),
+                Logger.LogType.INFO
+            );
         } catch (BigQueryException e) {
-            Logger.log("Query not performed\n" + e, Logger.LogType.ERROR);
+            Logger.log("Query not performed. " + e, Logger.LogType.ERROR);
         }
     }
 
 
-    private HttpHeaders getHttpHeaders() {
+    private HttpHeaders getHttpHeaders(String bqApiToken) {
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("Authorization", "Bearer ".concat(bqConfig.getGcpAdcAccessToken()));
-        httpHeaders.add("Accept", MediaType.APPLICATION_JSON_VALUE);
-        httpHeaders.add("Content-Type", MediaType.APPLICATION_JSON_VALUE);
+
+        BigQueryOptionsConfig bigQueryOptionsConfig = bigQueryConfig.getBigQueryOptionsConfig();
+        String gcpAdcAccessToken = bigQueryOptionsConfig.getGcpAdcAccessToken();
+        String gcpSaAccessToken = bigQueryOptionsConfig.getGcpSaAccessToken();
+        if (StringUtils.isNotEmpty(gcpAdcAccessToken)) {
+            httpHeaders.add(HttpHeaders.AUTHORIZATION, "Bearer ".concat(gcpAdcAccessToken));
+        } else if (!StringUtils.isEmpty(gcpSaAccessToken)) {
+            httpHeaders.add(HttpHeaders.AUTHORIZATION, "Bearer ".concat(gcpSaAccessToken));
+        } else {
+            httpHeaders.add(HttpHeaders.AUTHORIZATION, "Bearer ".concat(bqApiToken));
+        }
+        httpHeaders.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+        httpHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         return httpHeaders;
     }
 

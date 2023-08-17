@@ -7,6 +7,8 @@ public class Field {
 
     private String name;
     private String type;
+    private String mode;
     private String description;
+    private String defaultValueExpression;
 
 }

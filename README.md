@@ -48,7 +48,11 @@ gcloud auth application-default login
 <details>
 <summary>gcloud CLI: Generate an Application Default Credentials (ADC) access token</summary>
 
-If you're running the application locally, you can use the following command to generate an access token:
+If you're running the application locally, you can use the following command to generate an access token using Application Default Credentials (ADC):
+
+```shell
+gcloud auth application-default print-access-token
+```
 
 ```shell
 export GCP_ADC_ACCESS_TOKEN="$(gcloud auth application-default print-access-token)"
@@ -58,7 +62,7 @@ export GCP_ADC_ACCESS_TOKEN="$(gcloud auth application-default print-access-toke
 
 
 <details>
-<summary>gcloud CLI: Generate a GCP service account access token</summary>
+<summary>gcloud CLI: Generate an access token for service account impersonation</summary>
 
 Run this command to generate an access token for a specific GCP service account:
 
