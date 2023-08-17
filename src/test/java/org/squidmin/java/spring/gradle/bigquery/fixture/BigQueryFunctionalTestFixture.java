@@ -2,7 +2,7 @@ package org.squidmin.java.spring.gradle.bigquery.fixture;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.squidmin.java.spring.gradle.bigquery.CliConfig;
+import org.squidmin.java.spring.gradle.bigquery.TestUtil;
 import org.squidmin.java.spring.gradle.bigquery.config.DataTypes;
 import org.squidmin.java.spring.gradle.bigquery.config.Exclusions;
 import org.squidmin.java.spring.gradle.bigquery.config.Field;
@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public abstract class BigQueryFunctionalTestFixture {
+
+    public static final String RESOURCES_BASE_PATH = "src/test/resources/";
 
     private static final long CURRENT_DATE_TIME = 1691606220L;
     private static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
@@ -87,7 +89,7 @@ public abstract class BigQueryFunctionalTestFixture {
 
     public static ExampleRequest validRequest() throws IOException {
         ExampleRequest request = mapper.readValue(
-            CliConfig.readJson("/requests/valid_request.json"),
+            TestUtil.readJson("/requests/valid_request.json"),
             ExampleRequest.class
         );
         Logger.log(String.format("Request: %s", request), Logger.LogType.INFO);
@@ -112,7 +114,7 @@ public abstract class BigQueryFunctionalTestFixture {
 
     public static SchemaDefault validSchemaDefault() throws IOException {
         List<Field> fields = mapper.readValue(
-            CliConfig.readJson("/schema/schema.json"),
+            TestUtil.readJson("/schema/schema.json"),
             new TypeReference<>() {
             }
         );

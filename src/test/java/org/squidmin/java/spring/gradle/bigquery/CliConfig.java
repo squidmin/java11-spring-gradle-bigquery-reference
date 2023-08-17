@@ -17,16 +17,10 @@ import org.squidmin.java.spring.gradle.bigquery.fixture.BigQueryFunctionalTestFi
 import org.squidmin.java.spring.gradle.bigquery.service.BigQueryAdminClient;
 import org.squidmin.java.spring.gradle.bigquery.util.*;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
 @SpringBootTest(classes = {BigQueryAdminClient.class, IntegrationTestConfig.class})
 @ActiveProfiles("integration")
 @Slf4j
 public abstract class CliConfig {
-
-    private static final String RESOURCES_BASE_PATH = "src/test/resources/";
 
     @Autowired
     @Qualifier("bigQueryConfig_integrationTest")
@@ -185,22 +179,6 @@ public abstract class CliConfig {
 
     private String setEnvProperty(String defaultValue, String overrideValue) {
         return null != overrideValue ? overrideValue : defaultValue;
-    }
-
-    public static String readJson(String path) throws IOException {
-        return new String(Files.readAllBytes(Paths.get(RESOURCES_BASE_PATH.concat(path))));
-    }
-
-    public static String readQueryString(String path) throws IOException {
-        return BigQueryUtil.trimWhitespace(
-            new String(
-                Files.readAllBytes(
-                    Paths.get(
-                        RESOURCES_BASE_PATH.concat("queries/").concat(path)
-                    )
-                )
-            )
-        );
     }
 
 }
