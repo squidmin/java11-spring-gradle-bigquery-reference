@@ -28,7 +28,8 @@ repositories {
 }
 
 ext {
-	set('springCloudVersion', "2021.0.6")
+	set('springCloudGcpVersion', "4.7.2")
+	set('springCloudVersion', "2022.0.4")
 }
 
 springBoot {
@@ -77,6 +78,7 @@ dependencies {
 
 dependencyManagement {
 	imports {
+		mavenBom "com.google.cloud:spring-cloud-gcp-dependencies:${springCloudGcpVersion}"
 		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
 	}
 }
@@ -104,4 +106,17 @@ tasks.named('test') {
 		showStandardStreams = true
 		events 'passed', 'skipped', 'failed'
 	}
+}
+
+tasks.named('bootRun') {
+	systemProperty 'spring.profiles.active', System.getProperty('PROFILE')
+	systemProperty 'GCP_SA_KEY_PATH', System.getProperty('GCP_SA_KEY_PATH')
+	systemProperty 'GCP_ADC_ACCESS_TOKEN', System.getProperty('GCP_ADC_ACCESS_TOKEN')
+	systemProperty 'GCP_SA_ACCESS_TOKEN', System.getProperty('GCP_SA_ACCESS_TOKEN')
+	systemProperty 'GCP_DEFAULT_USER_PROJECT_ID', System.getProperty('GCP_DEFAULT_USER_PROJECT_ID')
+	systemProperty 'GCP_SA_PROJECT_ID', System.getProperty('GCP_SA_PROJECT_ID')
+	systemProperty 'GCP_DEFAULT_USER_DATASET', System.getProperty('GCP_DEFAULT_USER_DATASET')
+	systemProperty 'GCP_SA_DATASET', System.getProperty('GCP_SA_DATASET')
+	systemProperty 'GCP_DEFAULT_USER_TABLE', System.getProperty('GCP_DEFAULT_USER_TABLE')
+	systemProperty 'GCP_SA_TABLE', System.getProperty('GCP_SA_TABLE')
 }
